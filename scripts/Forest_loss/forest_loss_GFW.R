@@ -147,8 +147,8 @@ sf_ext_srs <- sf_bbox_analysis |> st_bbox()
 print(sf_ext_srs)
 
 # Load Guinea forest groupings polygon
-gin_for_shape <- st_read("/home/jurietheron/Projects/bon-in-a-box-pipelines/scripts/Forest_loss/gin_admbnda_adm1_ocha.gpkg") |> 
-  st_transform(sf_srs)
+#gin_for_shape <- st_read("/home/jurietheron/Projects/bon-in-a-box-pipelines/scripts/Forest_loss/gin_admbnda_adm1_ocha.gpkg") |> 
+#  st_transform(sf_srs)
 gin_for_shape <- st_read(file.path(path_script, "Forest_loss/gin_admbnda_adm1_ocha.gpkg")) |> 
   st_transform(sf_srs)
 print(gin_for_shape)
@@ -350,10 +350,6 @@ for(gin_group_index in 1:length(gin_for_shape_intersect)){
 }
 
 print("========== Outputting results ==========")
-
-
-
-
 
 # Outputting result
 biab_output("habitat_change_map", habitat_change_map_path)

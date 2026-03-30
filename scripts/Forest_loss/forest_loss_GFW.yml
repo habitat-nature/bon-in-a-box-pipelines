@@ -28,7 +28,7 @@ inputs:
     type: application/geopackage+sqlite3[]
     example:
       [
-       "/scripts/SHI/Myrmecophaga tridactyla_range.gpkg"
+       "/scripts/Forest_loss/gin_admbnda_adm1_ocha.gpkg"
       ]
   min_forest_Forest_Guinea:
     label: min forest (Forest Guinea)
