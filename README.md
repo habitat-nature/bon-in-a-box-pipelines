@@ -1,4 +1,4 @@
-# BON in a Box Pipelines
+# BON in a Box Pipelines | Habitat
 
 **Mapping Kunming-Montreal Global Biodiversity Framework indicators and their uncertainty.**
 
