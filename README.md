@@ -16,5 +16,3 @@ There is more to BON in a Box than pipelines. To get the big picture, you may wa
 ____________________
 
 *A GEO BON project, born from a collaboration between McGill, Humboldt institute, Université de Sherbrooke, Université Concordia and Université de Montréal, with seed funding from Microsoft.*
-
-Jurie test
