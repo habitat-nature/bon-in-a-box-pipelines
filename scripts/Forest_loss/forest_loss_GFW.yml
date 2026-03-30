@@ -1,0 +1,125 @@
+script: forest_loss_GFW.R
+name: Measure Forest loss
+description:
+  This script loads the area of habitat of the species and the Global Forest Watch (GFW) layers to measure changes on the habitat of the species.
+  It uses the layers the 2000 forest layer as a reference and removes the pixels from the loss layer of GFW data.
+author:
+  - name: Maria Isabel Arce-Plata
+    identifier: https://orcid.org/0000-0003-4024-9268
+  - name: Guillaume Larocque
+    identifier: https://orcid.org/0000-0002-5967-9156
+  - name: Jurie Theron
+    identifier: https://orcid.org/0000-0003-0739-8720
+license: CC BY
+inputs:
+  spat_res:
+    label: output spatial resolution
+    description: Spatial resolution (in meters) for the output of the analysis.
+    type: float
+    example: 500
+  crs:
+    label: CRS
+    description: Object containing CRS.
+    type: bboxCRS
+    example:
+  sf_bbox:
+    label: bounding box
+    description: Bounding box of the area of habitat for each species.
+    type: application/geopackage+sqlite3[]
+    example:
+      [
+       "/scripts/SHI/Myrmecophaga tridactyla_range.gpkg"
+      ]
+  min_forest_Forest_Guinea:
+    label: min forest (Forest Guinea)
+    description: Minimum tree cover percentage for the Forest Guinea region.
+      Acts as a filter for the Global Forest Watch Data.
+    type: int
+    example: 30
+  max_forest_Forest_Guinea:
+    label: max forest (Forest Guinea)
+    description: Maximum tree cover percentage for the Forest Guinea region.
+      Acts as a filter for the Global Forest Watch Data.
+    type: int
+    example: 100
+  min_forest_Maritime_Guinea:
+    label: min forest (Maritime Guinea)
+    description: Minimum tree cover percentage for the Maritime Guinea region.
+      Acts as a filter for the Global Forest Watch Data.
+    type: int
+    example: 25
+  max_forest_Maritime_Guinea:
+    label: max forest (Maritime Guinea)
+    description: Maximum tree cover percentage for the Maritime Guinea region.
+      Acts as a filter for the Global Forest Watch Data.
+    type: int
+    example: 100
+  min_forest_Middle_Guinea:
+    label: min forest (Middle Guinea)
+    description: Minimum tree cover percentage for the Middle Guinea region.
+      Acts as a filter for the Global Forest Watch Data.
+    type: int
+    example: 20
+  max_forest_Middle_Guinea:
+    label: max forest (Middle Guinea)
+    description: Maximum tree cover percentage for the Middle Guinea region.
+      Acts as a filter for the Global Forest Watch Data.
+    type: int
+    example: 100
+  min_forest_Upper_Guinea:
+    label: min forest (Upper Guinea)
+    description: Minimum tree cover percentage for the Upper Guinea region.
+      Acts as a filter for the Global Forest Watch Data.
+    type: int
+    example: 35
+  max_forest_Upper_Guinea:
+    label: max forest (Upper Guinea)
+    description: Maximum tree cover percentage for the Upper Guinea region.
+      Acts as a filter for the Global Forest Watch Data.
+    type: int
+    example: 100
+  t_0:
+    label: initial time
+    description: Year where the analysis should start. Starts in 2000, check the time interval available for the
+      Global Forest Watch data at https://stac.geobon.org/collections/gfw-lossyear.
+    type: int
+    example: 2000
+  t_n:
+    label: final time
+    description: Year where the analysis should end (it should be later than Initial time). It should be inside the time interval for the
+      Global Forest Watch data at https://stac.geobon.org/collections/gfw-lossyear.
+    type: int
+    example: 2020
+
+outputs:
+  habitat_change_map:
+    label: Forest change map (raster)
+    description: Raster map showing forest loss and gain for the given time range. Values 1 = no change, 2 = loss, 3 = gain.
+    type: image/tiff;application=geotiff[]
+conda:
+  channels:
+    - conda-forge
+    - r
+  dependencies:
+    - r-rjson
+    - r-dplyr
+    - r-tidyr
+    - r-purrr
+    - r-terra
+    - r-stars
+    - r-sf
+    - r-readr
+    - r-geodata
+    - r-gdalcubes
+    - r-rredlist
+    - r-stringr
+    - r-tmaptools
+    - r-ggplot2
+    - r-rstac
+    - r-lubridate
+    - r-RCurl
+    - r-codetools
+
+references:
+- text: Jetz et al., Species Habitat Index [accessed on 24/8/2022](https://mol.org/indicators/habitat/background)
+- text: Jetz, W., McGowan, J., Rinnan, D. S., Possingham, H. P., Visconti, P., O’Donnell, B., & Londoño-Murcia, M. C. (2022). Include biodiversity representation indicators in area-based conservation targets. Nature Ecology & Evolution, 6(2), 123–126. [https://doi.org/10.1038/s41559-021-01620-y](https://www.nature.com/articles/s41559-021-01620-y)

@@ -83,7 +83,7 @@ else
         git fetch --no-tag --depth 1 origin $branch
         assertSuccess
     else
-        git clone -n git@github.com:GEO-BON/bon-in-a-box-pipeline-engine.git --branch $branch --single-branch .server --depth 1
+        git clone -n https://github.com/GEO-BON/bon-in-a-box-pipeline-engine.git --branch $branch --single-branch .server --depth 1
         assertSuccess
         cd .server
         assertSuccess

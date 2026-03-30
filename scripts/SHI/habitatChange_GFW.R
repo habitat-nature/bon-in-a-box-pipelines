@@ -7,7 +7,7 @@ path_script <- Sys.getenv("SCRIPT_LOCATION")
 packages <- list(
   "rjson", "dplyr", "tidyr", "purrr", "terra", "stars", "sf", "readr", # "tmap",
   "geodata", "gdalcubes", "rredlist", "stringr", "tmaptools", "ggplot2", "rstac",
-  "lubridate", "RCurl"
+  "lubridate", "RCurl", "codetools"
 )
 
 lapply(packages, library, character.only = TRUE) # Load libraries - packages

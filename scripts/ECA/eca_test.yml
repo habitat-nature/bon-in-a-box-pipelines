@@ -1,0 +1,33 @@
+script: eca_test.R
+name: R Example for ECA
+author:
+  - name: Jurie Theron
+description: "This sample script shows how it works"
+lifecycle:
+  status: example
+inputs:
+  aoi_polygon:
+    label: This is a test aoi polygon
+    description: This is just a random test aoi polygon
+    type: application/geopackage+sqlite3
+    example:
+
+outputs:
+  aoi:
+    label: test aoi
+    description: Just a test aoi
+    type: application/geopackage+sqlite3
+  test_plot:
+    label: test plot
+    description: Just a test test plot
+    type: image/png
+  
+conda:
+  channels:
+    - conda-forge
+    - r
+  dependencies:
+    - r-rjson
+    - r-sf
+    - r-dplyr
+    - r-ggplot2

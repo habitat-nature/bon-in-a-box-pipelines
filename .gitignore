@@ -20,3 +20,4 @@ lib/
 # mac system files
 **/._*
 **/.DS_Store
+/.server

@@ -132,6 +132,7 @@ conda:
     - r-rstac
     - r-lubridate
     - r-RCurl
+    - r-codetools
 
 references:
 - text: Jetz et al., Species Habitat Index [accessed on 24/8/2022](https://mol.org/indicators/habitat/background)
