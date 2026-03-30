@@ -163,6 +163,15 @@ gin_for_shape_intersect <- gin_for_shape[
   ), 
 ]
 
+
+
+
+
+
+
+
+
+
 # Perform analysis per Guinea forest grouping
 habitat_change_map_path <- c()
 for(gin_group_index in 1:length(gin_for_shape_intersect)){
@@ -328,17 +337,15 @@ for(gin_group_index in 1:length(gin_for_shape_intersect)){
   v2 <- merge(r_GFW_gain_mask, v1) # merge gain
   v3 <- terra::classify(v2, rcl = cbind(0, NA)) # turn 0 to NA
 
-  # Recategorize
-  # Add colours
-  # Add labels
-
+  # Clip and maskto forested region
+  v3_clip <- terra::crop(v3,shape,mask=TRUE)
 
   # Save
   habitat_change_map_path[gin_group_index] <- file.path(outputFolder, shape$group, paste0(shape$group, "_GFW_loss.tiff"))
   dir.create(dirname(habitat_change_map_path[gin_group_index]), recursive = TRUE, showWarnings = FALSE)
   habitat_change_map <- suppressWarnings(
     terra::writeRaster(
-      v3,
+      v3_clip,
       habitat_change_map_path[gin_group_index],
       gdal = c("COMPRESS=DEFLATE", "TFW=YES"),
       filetype = "COG",
