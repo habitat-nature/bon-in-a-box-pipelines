@@ -24,12 +24,9 @@ inputs:
     example:
   sf_bbox:
     label: bounding box
-    description: Bounding box of the area of habitat for each species.
-    type: application/geopackage+sqlite3[]
+    description: Optional bounding box to clip the analysis. If provided, the analysis is clipped to the intersection of each Guinea region and this AOI. If omitted, the full extent of each Guinea region is used.
+    type: application/geopackage+sqlite3
     example:
-      [
-       "/scripts/Forest_loss/gin_admbnda_adm1_ocha.gpkg"
-      ]
   min_forest_Forest_Guinea:
     label: min forest (Forest Guinea)
     description: Minimum tree cover percentage for the Forest Guinea region.
