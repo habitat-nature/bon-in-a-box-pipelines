@@ -335,7 +335,7 @@ for(gin_group_index in 1:length(gin_for_shape_intersect)){
 
   # Save
   habitat_change_map_path[gin_group_index] <- file.path(outputFolder, shape$group, paste0(shape$group, "_GFW_loss.tiff"))
-  dir.create(habitat_change_map_path[gin_group_index], recursive = TRUE, showWarnings = FALSE)
+  dir.create(dirname(habitat_change_map_path[gin_group_index]), recursive = TRUE, showWarnings = FALSE)
   habitat_change_map <- suppressWarnings(
     terra::writeRaster(
       v3,
