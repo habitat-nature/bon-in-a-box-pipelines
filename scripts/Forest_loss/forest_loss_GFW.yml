@@ -33,48 +33,24 @@ inputs:
       Acts as a filter for the Global Forest Watch Data.
     type: int
     example: 30
-  max_forest_Forest_Guinea:
-    label: max forest (Forest Guinea)
-    description: Maximum tree cover percentage for the Forest Guinea region.
-      Acts as a filter for the Global Forest Watch Data.
-    type: int
-    example: 100
   min_forest_Maritime_Guinea:
     label: min forest (Maritime Guinea)
     description: Minimum tree cover percentage for the Maritime Guinea region.
       Acts as a filter for the Global Forest Watch Data.
     type: int
     example: 25
-  max_forest_Maritime_Guinea:
-    label: max forest (Maritime Guinea)
-    description: Maximum tree cover percentage for the Maritime Guinea region.
-      Acts as a filter for the Global Forest Watch Data.
-    type: int
-    example: 100
   min_forest_Middle_Guinea:
     label: min forest (Middle Guinea)
     description: Minimum tree cover percentage for the Middle Guinea region.
       Acts as a filter for the Global Forest Watch Data.
     type: int
     example: 20
-  max_forest_Middle_Guinea:
-    label: max forest (Middle Guinea)
-    description: Maximum tree cover percentage for the Middle Guinea region.
-      Acts as a filter for the Global Forest Watch Data.
-    type: int
-    example: 100
   min_forest_Upper_Guinea:
     label: min forest (Upper Guinea)
     description: Minimum tree cover percentage for the Upper Guinea region.
       Acts as a filter for the Global Forest Watch Data.
     type: int
     example: 35
-  max_forest_Upper_Guinea:
-    label: max forest (Upper Guinea)
-    description: Maximum tree cover percentage for the Upper Guinea region.
-      Acts as a filter for the Global Forest Watch Data.
-    type: int
-    example: 100
   t_0:
     label: initial time
     description: Year where the analysis should start. Starts in 2000, check the time interval available for the

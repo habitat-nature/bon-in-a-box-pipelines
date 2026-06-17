@@ -22,13 +22,13 @@ print("Inputs: ")
 print(input)
 
 # Load additional helper functions
-#path_script <- "scripts"
 #outputFolder <- "/home/jurietheron/Projects/bon-in-a-box-pipelines/output/Forest_loss/"
 if (!dir.exists(file.path(outputFolder))) {
   dir.create(outputFolder, recursive = TRUE, showWarnings = FALSE)
 } else {
   print("dir exists")
 }
+#path_script <- "scripts"
 path_script <- Sys.getenv("SCRIPT_LOCATION")
 source(file.path(path_script, "data/filterCubeRangeFunc.R"), echo = TRUE)
 source(file.path(path_script, "data/loadCubeFunc.R"), echo = TRUE)
@@ -79,47 +79,15 @@ min_forest_Upper_Guinea <- if (is.null(input$min_forest_Upper_Guinea)) {
 } else {
   input$min_forest_Upper_Guinea
 }
-#min_forest_Forest_Guinea <- 30
-#min_forest_Maritime_Guinea <- 25
-#min_forest_Middle_Guinea <- 20
-#min_forest_Upper_Guinea <- 35
+#min_forest_Forest_Guinea <- 25
+#min_forest_Maritime_Guinea <- 28
+#min_forest_Middle_Guinea <- 23
+#min_forest_Upper_Guinea <- 24
 min_forest <- c(
   "Forest Guinea" = min_forest_Forest_Guinea,
   "Maritime Guinea" = min_forest_Maritime_Guinea,
   "Middle Guinea" = min_forest_Middle_Guinea,
   "Upper Guinea" = min_forest_Upper_Guinea
-)
-
-# Max forest threshold for GFW (level of forest for the species)
-max_forest_Forest_Guinea <- if (is.null(input$max_forest_Forest_Guinea)) {
-  NA
-} else {
-  input$max_forest_Forest_Guinea
-}
-max_forest_Maritime_Guinea <- if (is.null(input$max_forest_Maritime_Guinea)) {
-  NA
-} else {
-  input$max_forest_Maritime_Guinea
-}
-max_forest_Middle_Guinea <- if (is.null(input$max_forest_Middle_Guinea)) {
-  NA
-} else {
-  input$max_forest_Middle_Guinea
-}
-max_forest_Upper_Guinea <- if (is.null(input$max_forest_Upper_Guinea)) {
-  NA
-} else {
-  input$max_forest_Upper_Guinea
-}
-#max_forest_Forest_Guinea <- 100
-#max_forest_Maritime_Guinea <- 100
-#max_forest_Middle_Guinea <- 100
-#max_forest_Upper_Guinea <- 100
-max_forest <- c(
-  "Forest Guinea" = max_forest_Forest_Guinea,
-  "Maritime Guinea" = max_forest_Maritime_Guinea,
-  "Middle Guinea"   = max_forest_Middle_Guinea,
-  "Upper Guinea"    = max_forest_Upper_Guinea
 )
 
 # define time range
@@ -243,7 +211,8 @@ print("========== Forest gain layer downloaded and processed ==========")
 #-------------------------------------------------------------------------------------------------------------------
 # 3. Perform analysis per Guinea forest grouping
 #-------------------------------------------------------------------------------------------------------------------
-habitat_change_map_path <- c()
+#gin_group_index = 1
+habitat_change_map <- list()
 for (gin_group_index in 1:length(gin_for_shape_intersect)) {
   # Select geometry, clipped to the AOI if provided
   shape <- gin_for_shape_intersect[gin_group_index, ]
@@ -253,7 +222,7 @@ for (gin_group_index in 1:length(gin_for_shape_intersect)) {
   print(paste0("========== Processing: ", shape$group, " =========="))
 
   # Subset the tree threshold values
-  max_threshold <- max_forest[shape$group]
+  max_threshold <- 100
   min_threshold <- min_forest[shape$group]
 
   #-------------------------------------------------------------------------------------------------------------------
@@ -304,23 +273,30 @@ for (gin_group_index in 1:length(gin_for_shape_intersect)) {
     mask = TRUE
   )
 
-  # Save
-  habitat_change_map_path[gin_group_index] <- file.path(outputFolder, shape$group, paste0(shape$group, "_GFW_loss.tiff"))
-  dir.create(dirname(habitat_change_map_path[gin_group_index]), recursive = TRUE, showWarnings = FALSE)
-  suppressWarnings(
-    terra::writeRaster(
-      v3_clip,
-      habitat_change_map_path[gin_group_index],
-      gdal = c("COMPRESS=DEFLATE", "TFW=YES"),
-      filetype = "COG",
-      overwrite = TRUE
-    )
-  )
+  # Store in list
+  habitat_change_map[[gin_group_index]] <- v3_clip
 
-  print("========== Map of forest loss generated ==========")
+  print("========== Layer of forest loss generated ==========")
 }
 
 print("========== Outputting results ==========")
+
+# Merge into single forest loss layer
+rsrc <- terra::sprc(habitat_change_map)
+habiatat_change_map_merge <- terra::merge(rsrc)
+
+# Save
+habitat_change_map_path <- file.path(outputFolder,"GFW_loss.tiff")
+dir.create(dirname(habitat_change_map_path), recursive = TRUE, showWarnings = FALSE)
+suppressWarnings(
+  terra::writeRaster(
+    habiatat_change_map_merge,
+    habitat_change_map_path,
+    gdal = c("COMPRESS=DEFLATE", "TFW=YES"),
+    filetype = "COG",
+    overwrite = TRUE
+  )
+)
 
 # Outputting result
 biab_output("habitat_change_map", habitat_change_map_path)
