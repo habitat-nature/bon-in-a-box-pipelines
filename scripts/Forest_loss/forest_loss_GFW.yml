@@ -69,6 +69,7 @@ outputs:
     label: Forest change map (raster)
     description: Raster map showing forest loss and gain for the given time range. Values 1 = no change, 2 = loss, 3 = gain.
     type: image/tiff;application=geotiff[]
+    range: [1, 3]
   forest_change_barplot:
     label: Forest loss barplot
     description: Barplot of forest loss as a percentage of baseline forest (no change + loss, gain excluded) for each Guinea region.
