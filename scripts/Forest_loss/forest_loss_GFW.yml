@@ -16,7 +16,7 @@ inputs:
     label: output spatial resolution
     description: Spatial resolution (in meters) for the output of the analysis.
     type: float
-    example: 500
+    example: 50
   crs:
     label: CRS
     description: Object containing CRS.
@@ -26,7 +26,7 @@ inputs:
     label: bounding box
     description: Optional bounding box to clip the analysis. If provided, the analysis is clipped to the intersection of each Guinea region and this AOI. If omitted, the full extent of each Guinea region is used.
     type: application/geopackage+sqlite3
-    example:
+    example: /userdata/Guinea/pnmb.gpkg
   min_forest_Forest_Guinea:
     label: min forest (Forest Guinea)
     description: Minimum tree cover percentage for the Forest Guinea region.
@@ -69,6 +69,14 @@ outputs:
     label: Forest change map (raster)
     description: Raster map showing forest loss and gain for the given time range. Values 1 = no change, 2 = loss, 3 = gain.
     type: image/tiff;application=geotiff[]
+  forest_change_barplot:
+    label: Forest loss barplot
+    description: Barplot of forest loss as a percentage of baseline forest (no change + loss, gain excluded) for each Guinea region.
+    type: image/png
+  forest_area_barplot:
+    label: Forest area barplot
+    description: Grouped barplot of area (ha) per change category (no change, loss, gain) for each Guinea region.
+    type: image/png
 conda:
   channels:
     - conda-forge

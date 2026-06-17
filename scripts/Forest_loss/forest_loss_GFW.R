@@ -22,7 +22,7 @@ print("Inputs: ")
 print(input)
 
 # Load additional helper functions
-#outputFolder <- "/home/jurietheron/Projects/bon-in-a-box-pipelines/output/Forest_loss/"
+#outputFolder <- "/home/jurietheron/Projects/bon-in-a-box-pipelines/output/Forest_loss"
 if (!dir.exists(file.path(outputFolder))) {
   dir.create(outputFolder, recursive = TRUE, showWarnings = FALSE)
 } else {
@@ -300,5 +300,101 @@ suppressWarnings(
 
 # Outputting result
 biab_output("habitat_change_map", habitat_change_map_path)
+
+#-------------------------------------------------------------------------------------------------------------------
+# 4. Barplot of % per change category, per Guinea region
+#-------------------------------------------------------------------------------------------------------------------
+print("========== Building forest change barplot ==========")
+
+# Category codes from the per-region rasters: 1 = no change, 2 = loss, 3 = gain
+# Forest loss % = loss / baseline forest, where baseline forest = no change + loss (gain excluded)
+loss_pct_df <- purrr::map_dfr(seq_along(habitat_change_map), function(i) {
+  r <- habitat_change_map[[i]]
+  freq_tab <- terra::freq(r) # columns: layer, value, count
+  counts <- setNames(freq_tab$count, as.character(freq_tab$value))
+  n_nochange <- ifelse(is.na(counts["1"]), 0, counts["1"])
+  n_loss     <- ifelse(is.na(counts["2"]), 0, counts["2"])
+  baseline   <- n_nochange + n_loss
+  data.frame(
+    region   = gin_for_shape_intersect$group[i],
+    loss_pct = if (baseline > 0) 100 * n_loss / baseline else NA_real_,
+    stringsAsFactors = FALSE
+  )
+})
+
+print(loss_pct_df)
+
+# Barplot: one loss % bar per region
+p_change <- ggplot2::ggplot(
+  loss_pct_df,
+  ggplot2::aes(x = region, y = loss_pct)
+) +
+  ggplot2::geom_col(fill = "#d95f02", width = 0.7) +
+  ggplot2::geom_text(
+    ggplot2::aes(label = sprintf("%.1f%%", loss_pct)),
+    vjust = -0.3, size = 3
+  ) +
+  ggplot2::labs(
+    title = paste0("Forest loss by region (", t_0, "-", t_n, ")"),
+    subtitle = "Loss as % of baseline forest (no change + loss, gain excluded)",
+    x = NULL, y = "Forest loss (%)"
+  ) +
+  ggplot2::theme_minimal() +
+  ggplot2::theme(axis.text.x = ggplot2::element_text(angle = 30, hjust = 1))
+
+# Save and register output
+change_barplot_path <- file.path(outputFolder, "forest_change_barplot.png")
+ggplot2::ggsave(change_barplot_path, p_change, width = 8, height = 5, dpi = 150)
+biab_output("forest_change_barplot", change_barplot_path)
+
+#-------------------------------------------------------------------------------------------------------------------
+# 5. Barplot of area (ha) per change category, per Guinea region
+#-------------------------------------------------------------------------------------------------------------------
+print("========== Building forest area barplot ==========")
+
+cat_labels <- c("1" = "No change", "2" = "Loss", "3" = "Gain")
+cell_area_ha <- (spat_res^2) / 10000 # projected units assumed metres -> hectares
+
+# Tally area (ha) per category for each stored region raster
+change_area_df <- purrr::map_dfr(seq_along(habitat_change_map), function(i) {
+  r <- habitat_change_map[[i]]
+  freq_tab <- terra::freq(r) # columns: layer, value, count
+  data.frame(
+    region  = gin_for_shape_intersect$group[i],
+    code    = as.character(freq_tab$value),
+    area_ha = freq_tab$count * cell_area_ha,
+    stringsAsFactors = FALSE
+  )
+}) |>
+  dplyr::filter(!is.na(code), code %in% names(cat_labels)) |>
+  dplyr::mutate(category = factor(cat_labels[code], levels = unname(cat_labels)))
+
+print(change_area_df)
+
+# Grouped barplot: one cluster of bars per region, coloured by category
+p_area <- ggplot2::ggplot(
+  change_area_df,
+  ggplot2::aes(x = region, y = area_ha, fill = category)
+) +
+  ggplot2::geom_col(position = ggplot2::position_dodge(width = 0.8), width = 0.7) +
+  ggplot2::geom_text(
+    ggplot2::aes(label = formatC(round(area_ha), format = "d", big.mark = ",")),
+    position = ggplot2::position_dodge(width = 0.8),
+    vjust = -0.3, size = 2.5
+  ) +
+  ggplot2::scale_fill_manual(
+    values = c("No change" = "#1b9e77", "Loss" = "#d95f02", "Gain" = "#7570b3")
+  ) +
+  ggplot2::labs(
+    title = paste0("Forest change area by region (", t_0, "-", t_n, ")"),
+    x = NULL, y = "Area (ha)", fill = NULL
+  ) +
+  ggplot2::theme_minimal() +
+  ggplot2::theme(axis.text.x = ggplot2::element_text(angle = 30, hjust = 1))
+
+# Save and register output
+area_barplot_path <- file.path(outputFolder, "forest_area_barplot.png")
+ggplot2::ggsave(area_barplot_path, p_area, width = 8, height = 5, dpi = 150)
+biab_output("forest_area_barplot", area_barplot_path)
 
 print("========== Analysis completed ==========")
