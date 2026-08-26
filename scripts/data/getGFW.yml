@@ -74,3 +74,4 @@ conda:
     - r-sf
     - r-gdalcubes
     - r-rstac
+    - r-dplyr

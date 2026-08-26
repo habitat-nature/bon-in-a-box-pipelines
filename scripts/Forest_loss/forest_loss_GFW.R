@@ -233,8 +233,8 @@ loss_pct_df <- purrr::map_dfr(seq_along(habitat_change_map), function(i) {
   r <- habitat_change_map[[i]]
   freq_tab <- terra::freq(r) # columns: layer, value, count
   counts <- setNames(freq_tab$count, as.character(freq_tab$value))
-  n_nochange <- ifelse(is.na(counts["1"]), 0, counts["1"])
-  n_loss     <- ifelse(is.na(counts["2"]), 0, counts["2"])
+  n_nochange <- unname(ifelse(is.na(counts["1"]), 0, counts["1"]))
+  n_loss     <- unname(ifelse(is.na(counts["2"]), 0, counts["2"]))
   baseline   <- n_nochange + n_loss
   data.frame(
     region   = gin_for_shape_intersect$group[i],

@@ -1,0 +1,380 @@
+{
+  "nodes": [
+    {
+      "id": "0",
+      "type": "io",
+      "position": {
+        "x": 613,
+        "y": 46.666666666666664
+      },
+      "data": {
+        "descriptionFile": "data>getGFW.yml"
+      }
+    },
+    {
+      "id": "1",
+      "type": "io",
+      "position": {
+        "x": 1535,
+        "y": 106.66666666666666
+      },
+      "data": {
+        "descriptionFile": "Forest_loss>forest_loss_GFW.yml"
+      }
+    },
+    {
+      "id": "4",
+      "type": "userInput",
+      "position": {
+        "x": 304,
+        "y": 230
+      },
+      "dragHandle": ".dragHandle",
+      "data": {
+        "type": "int",
+        "value": 2000
+      }
+    },
+    {
+      "id": "5",
+      "type": "userInput",
+      "position": {
+        "x": 310,
+        "y": 265
+      },
+      "dragHandle": ".dragHandle",
+      "data": {
+        "type": "int",
+        "value": 2020
+      }
+    },
+    {
+      "id": "6",
+      "type": "userInput",
+      "position": {
+        "x": 192,
+        "y": 82
+      },
+      "dragHandle": ".dragHandle",
+      "data": {
+        "type": "bboxCRS"
+      }
+    },
+    {
+      "id": "8",
+      "type": "userInput",
+      "position": {
+        "x": 12,
+        "y": 12
+      },
+      "dragHandle": ".dragHandle",
+      "data": {
+        "type": "application/octet-stream"
+      }
+    },
+    {
+      "id": "9",
+      "type": "userInput",
+      "position": {
+        "x": 977,
+        "y": 198.66666666666666
+      },
+      "dragHandle": ".dragHandle",
+      "data": {
+        "type": "application/geopackage+sqlite3",
+        "value": "/userdata/Guinea/pnmb.gpkg"
+      }
+    },
+    {
+      "id": "10",
+      "type": "userInput",
+      "position": {
+        "x": 176,
+        "y": 47
+      },
+      "dragHandle": ".dragHandle",
+      "data": {
+        "type": "float",
+        "value": 50
+      }
+    },
+    {
+      "id": "11",
+      "type": "output",
+      "position": {
+        "x": 2086,
+        "y": 14.166666666666657
+      },
+      "data": {
+        "label": "Output"
+      }
+    },
+    {
+      "id": "12",
+      "type": "output",
+      "position": {
+        "x": 2086,
+        "y": 84.16666666666666
+      },
+      "data": {
+        "label": "Output"
+      }
+    },
+    {
+      "id": "13",
+      "type": "output",
+      "position": {
+        "x": 2086,
+        "y": 49.16666666666666
+      },
+      "data": {
+        "label": "Output"
+      }
+    }
+  ],
+  "edges": [
+    {
+      "source": "0",
+      "sourceHandle": "tree_cover",
+      "target": "1",
+      "targetHandle": "tree_cover",
+      "id": "xy-edge__0tree_cover-1tree_cover"
+    },
+    {
+      "source": "0",
+      "sourceHandle": "loss_before_t0",
+      "target": "1",
+      "targetHandle": "loss_before_t0",
+      "id": "xy-edge__0loss_before_t0-1loss_before_t0"
+    },
+    {
+      "source": "0",
+      "sourceHandle": "loss_period",
+      "target": "1",
+      "targetHandle": "loss_period",
+      "id": "xy-edge__0loss_period-1loss_period"
+    },
+    {
+      "source": "0",
+      "sourceHandle": "forest_gain",
+      "target": "1",
+      "targetHandle": "forest_gain",
+      "id": "xy-edge__0forest_gain-1forest_gain"
+    },
+    {
+      "source": "4",
+      "target": "0",
+      "targetHandle": "t_0",
+      "id": "xy-edge__4-0t_0"
+    },
+    {
+      "source": "4",
+      "target": "1",
+      "targetHandle": "t_0",
+      "id": "xy-edge__4-1t_0"
+    },
+    {
+      "source": "5",
+      "target": "0",
+      "targetHandle": "t_n",
+      "id": "xy-edge__5-0t_n"
+    },
+    {
+      "source": "5",
+      "target": "1",
+      "targetHandle": "t_n",
+      "id": "xy-edge__5-1t_n"
+    },
+    {
+      "source": "6",
+      "target": "0",
+      "targetHandle": "crs",
+      "id": "xy-edge__6-0crs"
+    },
+    {
+      "source": "6",
+      "target": "1",
+      "targetHandle": "crs",
+      "id": "xy-edge__6-1crs"
+    },
+    {
+      "source": "8",
+      "target": "0",
+      "targetHandle": "area_file",
+      "id": "xy-edge__8-0area_file"
+    },
+    {
+      "source": "9",
+      "target": "1",
+      "targetHandle": "sf_bbox",
+      "id": "xy-edge__9-1sf_bbox"
+    },
+    {
+      "source": "10",
+      "target": "0",
+      "targetHandle": "spat_res",
+      "id": "xy-edge__10-0spat_res"
+    },
+    {
+      "source": "10",
+      "target": "1",
+      "targetHandle": "spat_res",
+      "id": "xy-edge__10-1spat_res"
+    },
+    {
+      "source": "1",
+      "sourceHandle": "habitat_change_map",
+      "target": "11",
+      "id": "xy-edge__1habitat_change_map-11"
+    },
+    {
+      "source": "1",
+      "sourceHandle": "forest_area_barplot",
+      "target": "12",
+      "id": "xy-edge__1forest_area_barplot-12"
+    },
+    {
+      "source": "1",
+      "sourceHandle": "forest_change_barplot",
+      "target": "13",
+      "id": "xy-edge__1forest_change_barplot-13"
+    }
+  ],
+  "inputs": {
+    "data>getGFW.yml@0|area_type": {
+      "description": "Select whether the download area comes from the country/region chooser, a polygon file, or a raster file.",
+      "label": "Download area type",
+      "type": "options",
+      "options": [
+        "Country or region",
+        "Polygon",
+        "Raster"
+      ],
+      "example": "Country or region",
+      "weight": 0
+    },
+    "pipeline@6": {
+      "label": "Country, region, bounding box, and output CRS",
+      "description": "Select a country or region, or draw a bounding box, and select the CRS used for the downloaded GFW rasters.",
+      "type": "bboxCRS",
+      "example": null,
+      "weight": 1
+    },
+    "pipeline@8": {
+      "label": "Polygon or raster area file",
+      "description": "Select one polygon or raster file when Polygon or Raster is chosen above. Leave blank for Country or region.",
+      "type": "application/octet-stream",
+      "example": null,
+      "weight": 2
+    },
+    "pipeline@9": {
+      "label": "bounding box",
+      "description": "Optional bounding box to clip the analysis. If provided, the analysis is clipped to the intersection of each Guinea region and this AOI. If omitted, the full extent of each Guinea region is used.",
+      "type": "application/geopackage+sqlite3",
+      "example": "/userdata/Guinea/pnmb.gpkg",
+      "weight": 3
+    },
+    "pipeline@10": {
+      "label": "Output spatial resolution",
+      "description": "Spatial resolution in metres for the downloaded GFW layers.",
+      "type": "float",
+      "example": 50,
+      "weight": 4
+    },
+    "pipeline@4": {
+      "label": "Initial time",
+      "description": "Initial year for the forest-loss period.",
+      "type": "int",
+      "example": 2000,
+      "weight": 5
+    },
+    "pipeline@5": {
+      "label": "Final time",
+      "description": "Final year for the forest-loss period.",
+      "type": "int",
+      "example": 2020,
+      "weight": 6
+    },
+    "Forest_loss>forest_loss_GFW.yml@1|min_forest_Forest_Guinea": {
+      "description": "Minimum tree cover percentage for the Forest Guinea region. Acts as a filter for the Global Forest Watch Data.",
+      "label": "min forest (Forest Guinea)",
+      "type": "int",
+      "example": 30,
+      "weight": 7
+    },
+    "Forest_loss>forest_loss_GFW.yml@1|min_forest_Maritime_Guinea": {
+      "description": "Minimum tree cover percentage for the Maritime Guinea region. Acts as a filter for the Global Forest Watch Data.",
+      "label": "min forest (Maritime Guinea)",
+      "type": "int",
+      "example": 25,
+      "weight": 8
+    },
+    "Forest_loss>forest_loss_GFW.yml@1|min_forest_Middle_Guinea": {
+      "description": "Minimum tree cover percentage for the Middle Guinea region. Acts as a filter for the Global Forest Watch Data.",
+      "label": "min forest (Middle Guinea)",
+      "type": "int",
+      "example": 20,
+      "weight": 9
+    },
+    "Forest_loss>forest_loss_GFW.yml@1|min_forest_Upper_Guinea": {
+      "description": "Minimum tree cover percentage for the Upper Guinea region. Acts as a filter for the Global Forest Watch Data.",
+      "label": "min forest (Upper Guinea)",
+      "type": "int",
+      "example": 35,
+      "weight": 10
+    }
+  },
+  "outputs": {
+    "Forest_loss>forest_loss_GFW.yml@1|habitat_change_map": {
+      "description": "Raster map showing forest loss and gain for the given time range. Values 1 = no change, 2 = loss, 3 = gain.",
+      "label": "Forest change map (raster)",
+      "type": "image/tiff;application=geotiff[]",
+      "range": [
+        1,
+        3
+      ],
+      "weight": 0
+    },
+    "Forest_loss>forest_loss_GFW.yml@1|forest_area_barplot": {
+      "description": "Grouped barplot of area (ha) per change category (no change, loss, gain) for each Guinea region.",
+      "label": "Forest area barplot",
+      "type": "image/png",
+      "weight": 1
+    },
+    "Forest_loss>forest_loss_GFW.yml@1|forest_change_barplot": {
+      "description": "Barplot of forest loss as a percentage of baseline forest (no change + loss, gain excluded) for each Guinea region.",
+      "label": "Forest loss barplot",
+      "type": "image/png",
+      "weight": 2
+    }
+  },
+  "metadata": {
+    "name": "Measure Forest Loss",
+    "description": null,
+    "author": [
+      {
+        "name": null,
+        "email": null,
+        "identifier": null
+      }
+    ],
+    "license": null,
+    "external_link": null,
+    "references": [
+      {
+        "text": null,
+        "link": null
+      },
+      {
+        "text": null,
+        "link": null
+      }
+    ],
+    "compute": {
+      "hpc": false,
+      "mem": "4Gi",
+      "cpus-per-task": 4,
+      "time": "02:00:00"
+    }
+  }
+}

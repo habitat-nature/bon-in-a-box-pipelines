@@ -5,7 +5,7 @@
 
 options(timeout = max(60000000, getOption("timeout")))
 
-packages <- list("rjson", "purrr", "terra", "sf", "gdalcubes", "rstac")
+packages <- list("rjson", "purrr", "terra", "sf", "gdalcubes", "rstac", "dplyr")
 suppressPackageStartupMessages(lapply(packages, library, character.only = TRUE))
 
 input <- biab_inputs()
@@ -19,6 +19,26 @@ if (!dir.exists(outputFolder)) {
 path_script <- Sys.getenv("SCRIPT_LOCATION")
 source(file.path(path_script, "data/filterCubeRangeFunc.R"), echo = TRUE)
 source(file.path(path_script, "data/loadCubeFunc.R"), echo = TRUE)
+
+# Write larger cubes directly to disk before opening them with terra. This
+# avoids converting a stars proxy in cube_to_raster(), which fails for large
+# areas with recent versions of stars/abind.
+cube_to_terra <- function(cube, prefix) {
+  cube_dir <- file.path(outputFolder, "gdalcubes")
+  dir.create(cube_dir, recursive = TRUE, showWarnings = FALSE)
+  tif_prefix <- basename(tempfile(pattern = paste0(prefix, "_"), tmpdir = cube_dir))
+  tif_paths <- gdalcubes::write_tif(
+    cube,
+    dir = cube_dir,
+    prefix = tif_prefix,
+    COG = TRUE,
+    creation_options = list(COMPRESS = "DEFLATE")
+  )
+  if (length(tif_paths) == 0) {
+    biab_error_stop(paste0("No GeoTIFF was produced for ", prefix, "."))
+  }
+  terra::rast(tif_paths)
+}
 
 #-------------------------------------------------------------------------------
 # Prepare user inputs
@@ -99,7 +119,7 @@ cube_GFW_TC <- load_cube(
   t1 = "2000-12-31",
   resampling = "bilinear"
 )
-r_GFW_TC <- suppressWarnings(cube_to_raster(cube_GFW_TC, format = "terra"))
+r_GFW_TC <- suppressWarnings(cube_to_terra(cube_GFW_TC, "treecover2000"))
 print("========== Base forest layer downloaded ==========")
 
 print("========== Downloading and processing forest loss maps ==========")
@@ -124,7 +144,7 @@ if (t_0 != 2000) {
     max = t_0_code, type_max = 1, value = FALSE
   )
   r_loss_before_t0 <- suppressWarnings(
-    cube_to_raster(cube_loss_before_t0, format = "terra")
+    cube_to_terra(cube_loss_before_t0, "loss_before_t0")
   )
   r_loss_before_t0 <- terra::classify(r_loss_before_t0, rcl = cbind(NA, 0))
   cube_loss_period <- funFilterCube_range(
@@ -137,14 +157,14 @@ if (t_0 != 2000) {
     max = t_n_code, type_max = 1, value = FALSE
   )
   # Not used for a 2000 start, but keep the interface between steps constant.
-  r_loss_before_t0 <- suppressWarnings(
-    cube_to_raster(cube_loss_period, format = "terra")
-  )
-  r_loss_before_t0 <- terra::init(r_loss_before_t0, 0)
+  r_loss_before_t0 <- NULL
 }
 
-r_year_loss <- suppressWarnings(cube_to_raster(cube_loss_period, format = "terra"))
+r_year_loss <- suppressWarnings(cube_to_terra(cube_loss_period, "loss_period"))
 r_year_loss <- terra::classify(r_year_loss, rcl = cbind(NA, 0))
+if (is.null(r_loss_before_t0)) {
+  r_loss_before_t0 <- terra::init(r_year_loss, 0)
+}
 print("========== Forest loss layer downloaded and processed ==========")
 
 print("========== Downloading and processing forest gain maps ==========")
@@ -160,7 +180,7 @@ cube_GFW_gain <- load_cube(
   t1 = "2000-12-31",
   resampling = "near"
 )
-r_GFW_gain <- cube_to_raster(cube_GFW_gain, format = "terra")
+r_GFW_gain <- cube_to_terra(cube_GFW_gain, "gain")
 r_GFW_gain <- terra::classify(r_GFW_gain, rcl = cbind(0, NA))
 print("========== Forest gain layer downloaded and processed ==========")
 
