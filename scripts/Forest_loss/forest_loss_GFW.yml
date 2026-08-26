@@ -12,6 +12,22 @@ author:
     identifier: https://orcid.org/0000-0003-0739-8720
 license: CC BY
 inputs:
+  tree_cover:
+    label: GFW tree cover in 2000
+    description: Tree-cover raster produced by the Download Global Forest Watch data step.
+    type: image/tiff;application=geotiff[]
+  loss_before_t0:
+    label: GFW loss before initial year
+    description: Pre-period loss raster produced by the Download Global Forest Watch data step.
+    type: image/tiff;application=geotiff[]
+  loss_period:
+    label: GFW loss during analysis period
+    description: Analysis-period loss raster produced by the Download Global Forest Watch data step.
+    type: image/tiff;application=geotiff[]
+  forest_gain:
+    label: GFW forest gain
+    description: Forest-gain raster produced by the Download Global Forest Watch data step.
+    type: image/tiff;application=geotiff[]
   spat_res:
     label: output spatial resolution
     description: Spatial resolution (in meters) for the output of the analysis.

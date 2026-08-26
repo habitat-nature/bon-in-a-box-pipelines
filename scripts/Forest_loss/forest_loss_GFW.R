@@ -30,8 +30,6 @@ if (!dir.exists(file.path(outputFolder))) {
 }
 #path_script <- "scripts"
 path_script <- Sys.getenv("SCRIPT_LOCATION")
-source(file.path(path_script, "data/filterCubeRangeFunc.R"), echo = TRUE)
-source(file.path(path_script, "data/loadCubeFunc.R"), echo = TRUE)
 
 #-------------------------------------------------------------------------------
 # Prepare user inputs for analysis
@@ -96,8 +94,11 @@ min_forest <- c(
 t_0 <- input$t_0
 t_n <- input$t_n # should be larger than t_0
 
-# Convert years to 2-digit lossyear codes
-t_n_code <- as.numeric(substr(t_n, start = 3, stop = 4))
+# Load the GFW rasters produced by the separate download step
+r_GFW_TC <- terra::rast(input$tree_cover)
+r_loss_before_t0 <- terra::rast(input$loss_before_t0)
+r_year_loss <- terra::rast(input$loss_period)
+r_GFW_gain_aoi <- terra::rast(input$forest_gain)
 
 #-------------------------------------------------------------------------------
 # Conditional checks
@@ -151,13 +152,12 @@ for (gin_group_index in 1:length(gin_for_shape_intersect)) {
   #-------------------------------------------------------------------------------------------------------------------
   print("========== Processing base forest layer ==========")
 
-  cube_GFW_TC_threshold <<- funFilterCube_range(
-    cube_GFW_TC,
-    min = min_threshold,
-    max = max_threshold,
-    value = FALSE
+  r_GFW_TC_threshold <- terra::clamp(
+    r_GFW_TC,
+    lower = min_threshold,
+    upper = max_threshold,
+    values = FALSE
   )
-  r_GFW_TC_threshold <- suppressWarnings(cube_to_raster(cube_GFW_TC_threshold, format = "terra"))
   r_GFW_TC_threshold <- terra::classify(r_GFW_TC_threshold, rcl = cbind(NA, 0))
 
   # Rebase forest layer to t_0 by removing pre-t_0 loss (uses r_loss_before_t0 computed once above)

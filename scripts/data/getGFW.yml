@@ -1,0 +1,76 @@
+script: getGFW.R
+name: Download Global Forest Watch data
+description: >-
+  Downloads and prepares the Global Forest Watch tree-cover, forest-loss, and
+  forest-gain layers for a selected country or region, polygon, or raster extent.
+author:
+  - name: Maria Isabel Arce-Plata
+    identifier: https://orcid.org/0000-0003-4024-9268
+  - name: Guillaume Larocque
+    identifier: https://orcid.org/0000-0002-5967-9156
+  - name: Jurie Theron
+    identifier: https://orcid.org/0000-0003-0739-8720
+license: CC BY
+inputs:
+  area_type:
+    label: Download area type
+    description: Select whether the download area comes from the country/region chooser, a polygon file, or a raster file.
+    type: options
+    options:
+      - Country or region
+      - Polygon
+      - Raster
+    example: Country or region
+  area_file:
+    label: Polygon or raster area file
+    description: Select one polygon or raster file when Polygon or Raster is chosen above. Leave blank for Country or region.
+    type: application/octet-stream
+    example: null
+  spat_res:
+    label: Output spatial resolution
+    description: Spatial resolution in metres for the downloaded GFW layers.
+    type: float
+    example: 50
+  crs:
+    label: Country, region, bounding box, and output CRS
+    description: Select a country or region, or draw a bounding box, and select the CRS used for the downloaded GFW rasters.
+    type: bboxCRS
+    example: null
+  t_0:
+    label: Initial time
+    description: Initial year for the forest-loss period.
+    type: int
+    example: 2000
+  t_n:
+    label: Final time
+    description: Final year for the forest-loss period.
+    type: int
+    example: 2020
+outputs:
+  tree_cover:
+    label: GFW tree cover in 2000
+    description: Tree-cover percentage raster for 2000.
+    type: image/tiff;application=geotiff[]
+  loss_before_t0:
+    label: GFW loss before initial year
+    description: Forest loss from 2001 through the initial year.
+    type: image/tiff;application=geotiff[]
+  loss_period:
+    label: GFW loss during analysis period
+    description: Forest loss after the initial year through the final year.
+    type: image/tiff;application=geotiff[]
+  forest_gain:
+    label: GFW forest gain
+    description: Global Forest Watch forest-gain raster.
+    type: image/tiff;application=geotiff[]
+conda:
+  channels:
+    - conda-forge
+    - r
+  dependencies:
+    - r-rjson
+    - r-purrr
+    - r-terra
+    - r-sf
+    - r-gdalcubes
+    - r-rstac
