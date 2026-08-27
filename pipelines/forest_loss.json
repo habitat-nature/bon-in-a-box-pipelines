@@ -349,32 +349,37 @@
     }
   },
   "metadata": {
-    "name": "Measure Forest Loss",
-    "description": null,
+    "name": "Measure Forest Change",
+    "description": "\n## Introduction\nThe Measure Forest Change pipeline maps forest loss, forest gain, and areas with no detected change using Global Forest Watch (GFW) data. It uses tree-cover percentage in 2000 as the forest baseline, applies a user-defined minimum tree-cover threshold for each of Guinea's four natural regions, and removes forest loss recorded before the selected initial year to create a baseline for the analysis period. The pipeline then combines this baseline with forest-loss and forest-gain layers to classify each mapped pixel as no change, loss, or gain.\n\nThe analysis is run separately for Forest Guinea, Maritime Guinea, Middle Guinea, and Upper Guinea. Users can analyze the full regions or clip them to a selected area of interest. Results include a forest-change raster, a chart of forest loss as a percentage of baseline forest, and a chart of the area in each change category by region.\n## Uses\nThe pipeline can be used to describe and compare forest-cover change among Guinea's natural regions. It can support forest monitoring, conservation planning, restoration assessment, and reporting by showing where forest loss or gain has been detected and summarizing the magnitude of change within each region. Region-specific tree-cover thresholds allow users to adapt the definition of forest to differences in vegetation among the four regions.\n## Pipeline limitations\n* The pipeline is currently specific to Guinea because it uses a bundled boundary layer for Forest Guinea, Maritime Guinea, Middle Guinea, and Upper Guinea. An uploaded polygon or selected bounding box clips these regions but does not replace them.\n* Results depend on the selected minimum tree-cover thresholds. Different thresholds can substantially change the mapped baseline forest area and the resulting loss percentages.\n* GFW tree-cover loss identifies complete removal of tree-cover canopy at the pixel scale and does not by itself distinguish permanent deforestation from temporary loss, harvesting, fire, or other disturbances.\n* The forest-gain layer represents gain over its source data period rather than annual gain for the user-selected interval. Gain should therefore not be interpreted as occurring specifically between the selected initial and final years.\n* Forest loss is calculated as a percentage of baseline forest (no change plus loss); forest gain is excluded from the denominator.\n* Output accuracy is constrained by the spatial resolution and classification accuracy of the source data. Coarser user-selected resolutions may obscure small or fragmented changes.\n## Before you start\nNo API key is required. Select an initial and final year supported by the GFW loss-year collection, choose an output coordinate reference system appropriate for area calculations, and specify the output spatial resolution in metres.\n\nChoose whether the download area is defined by the country/region selector, a polygon, or a raster. When using a polygon or raster, provide the corresponding file. The optional analysis-area polygon further clips the four Guinea regions. Set a minimum tree-cover percentage for each region; pixels below that threshold are not treated as baseline forest.\n\nThe forest-change raster uses the values 1 for no change, 2 for loss, and 3 for gain. The forest-loss chart reports loss relative to baseline forest, while the area chart reports hectares of no change, loss, and gain for each included region.\n\nView the [GEO BON STAC catalog](https://stac.geobon.org/) to inspect the GFW tree-cover and loss-year collections used by the pipeline.",
     "author": [
       {
-        "name": null,
-        "email": null,
-        "identifier": null
-      }
-    ],
-    "license": null,
-    "external_link": null,
-    "references": [
-      {
-        "text": null,
-        "link": null
+        "name": "Maria Isabel Arce-Plata",
+        "identifier": "https://orcid.org/0000-0003-4024-9268"
       },
       {
-        "text": null,
-        "link": null
+        "name": "Guillaume Larocque",
+        "identifier": "https://orcid.org/0000-0002-5967-9156"
+      },
+      {
+        "name": "Jurie Theron",
+        "identifier": "https://orcid.org/0000-0003-0739-8720"
+      },
+      {
+        "name": "Samara Manzin",
+        "identifier": "https://orcid.org/0009-0005-9134-9981"
       }
     ],
-    "compute": {
-      "hpc": false,
-      "mem": "4Gi",
-      "cpus-per-task": 4,
-      "time": "02:00:00"
-    }
+    "license": "CC BY",
+    "external_link": "https://stac.geobon.org/",
+    "references": [
+      {
+        "text": "Hansen, M. C., Potapov, P. V., Moore, R., Hancher, M., Turubanova, S. A., Tyukavina, A., Thau, D., Stehman, S. V., Goetz, S. J., Loveland, T. R., Kommareddy, A., Egorov, A., Chini, L., Justice, C. O., and Townshend, J. R. G. 2013. High-Resolution Global Maps of 21st-Century Forest Cover Change. Science 342 (6160): 850-853.",
+        "doi": "https://doi.org/10.1126/science.1244693"
+      },
+      {
+        "text": "Hansen/UMD/Google/USGS/NASA. Global Forest Change data. Global Forest Watch.",
+        "link": "https://www.globalforestwatch.org/map/"
+      }
+    ]
   }
 }

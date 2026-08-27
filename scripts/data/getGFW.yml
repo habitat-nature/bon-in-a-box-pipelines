@@ -69,9 +69,20 @@ conda:
     - r
   dependencies:
     - r-rjson
+    - r-dplyr
+    - r-tidyr
     - r-purrr
     - r-terra
+    - r-stars
     - r-sf
+    - r-readr
+    - r-geodata
     - r-gdalcubes
+    - r-rredlist
+    - r-stringr
+    - r-tmaptools
+    - r-ggplot2
     - r-rstac
-    - r-dplyr
+    - r-lubridate
+    - r-RCurl
+    - r-codetools
