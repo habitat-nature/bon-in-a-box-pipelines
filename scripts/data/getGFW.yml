@@ -23,7 +23,7 @@ inputs:
     example: Country or region
   area_file:
     label: Polygon or raster area file
-    description: Select one polygon or raster file when Polygon or Raster is chosen above. Leave blank for Country or region.
+    description: Select one polygon or raster file when Polygon or Raster is chosen above. Leave blank for Country or region. To match a separate analysis, use the same extent and CRS.
     type: application/octet-stream
     example: null
   spat_res:

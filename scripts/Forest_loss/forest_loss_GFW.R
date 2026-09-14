@@ -135,7 +135,7 @@ print(sf_ext_srs)
 #-------------------------------------------------------------------------------------------------------------------
 #gin_group_index = 1
 habitat_change_map <- list()
-for (gin_group_index in 1:length(gin_for_shape_intersect)) {
+for (gin_group_index in seq_len(nrow(gin_for_shape_intersect))) {
   # Select geometry, clipped to the AOI if provided
   shape <- gin_for_shape_intersect[gin_group_index, ]
   if (!is.null(sf_bbox_analysis)) {
@@ -159,6 +159,8 @@ for (gin_group_index in 1:length(gin_for_shape_intersect)) {
     values = FALSE
   )
   r_GFW_TC_threshold <- terra::classify(r_GFW_TC_threshold, rcl = cbind(NA, 0))
+
+  r_GFW_TC_threshold <- terra::ifel(r_GFW_TC_threshold > 0, 1, 0)
 
   # Rebase forest layer to t_0 by removing pre-t_0 loss (uses r_loss_before_t0 computed once above)
   if (t_0 != 2000) {
