@@ -48,6 +48,9 @@ if (is.null(resistance_layer)) {
   print("Resistance layer provided, using least-cost distance for ProtConn analysis.")
 }
 
+print("Resistance layer:")
+print(resistance_layer)
+
 units::units_options(set_units_mode = "standard")
 protected_areas_path <- c()
 # Load study area shapefile
@@ -276,7 +279,11 @@ protconn_result <- tryCatch(
       nodes = protected_areas_simp,
       region = study_area,
       area_unit = "m2",
-      distance = ifelse(!is.null(resistance_layer), list(type = "edge", keep = 0.6), list(type = "least-cost", resistance = resistance_layer)),
+      distance = if (is.null(resistance_layer)) {
+        list(type = "edge", keep = 0.6)
+      } else {
+       list(type = "least-cost", resistance = resistance_layer)
+      },
       probability = 0.5,
       transboundary = input$buffer,
       distance_thresholds = c(input$distance_threshold),
@@ -397,7 +404,11 @@ if (input$time_series == TRUE) {
         nodes = protected_areas_filt_yr,
         region = study_area,
         area_unit = "m2",
-        distance = ifelse(!is.null(resistance_layer), list(type = "edge", keep = 0.6), list(type = "least-cost", resistance = resistance_layer)),
+        distance = if (is.null(resistance_layer)) {
+          list(type = "edge", keep = 0.6)
+        } else {
+         list(type = "least-cost", resistance = resistance_layer)
+        },
         probability = 0.5,
         transboundary = input$buffer,
         distance_thresholds = c(input$distance_threshold),
@@ -495,4 +506,9 @@ if (input$time_series == TRUE) {
   protected_areas_path <- protected_areas_simp_path
 }
 
+if (!is.null(resistance_layer)) {
+resistance_path <- file.path(outputFolder, "resistance_layer.tif")
+writeRaster(resistance_layer, resistance_path)
+biab_output("resistance_layer", resistance_path)
+}
 biab_output("protected_areas", protected_areas_path[!is.na(protected_areas_path)])

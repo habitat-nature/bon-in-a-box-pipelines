@@ -114,6 +114,10 @@ outputs:
     label: Area of study area
     description: Area of the study area in square kilometers
     type: text
+  resistance_layer:
+    label: Resistance layer
+    description: Raster layer representing the resistance of the landscape for species movement. Higher values indicate higher resistance.
+    type: application/raster+geotiff
   protected_area_km2:
     label: Area of protected areas
     description: Total area of the protected areas in square kilometers
