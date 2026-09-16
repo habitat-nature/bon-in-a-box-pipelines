@@ -16,6 +16,15 @@ if ((input$year_int) >= (input$years - input$start_year)) {
   biab_error_stop("Please make sure the year interval is smaller than the difference between start year and year for cutoff.")
 }
 
+resistance_layer <- input$resistance_layer
+
+if (is.null(resistance_layer)) {
+  print("No resistance layer provided, using edge distance for ProtConn analysis.")
+} else {
+  resistance_layer <- rast(resistance_layer)
+  print("Resistance layer provided, using least-cost distance for ProtConn analysis.")
+}
+
 units::units_options(set_units_mode = "standard")
 protected_areas_path <- c()
 # Load study area shapefile
@@ -244,7 +253,7 @@ protconn_result <- tryCatch(
       nodes = protected_areas_simp,
       region = study_area,
       area_unit = "m2",
-      distance = list(type = "edge", keep = 0.6),
+      distance = ifelse(!is.null(resistance_layer), list(type = "edge", keep = 0.6), list(type = "least-cost", resistance = resistance_layer)),
       probability = 0.5,
       transboundary = input$buffer,
       distance_thresholds = c(input$distance_threshold),
@@ -365,7 +374,7 @@ if (input$time_series == TRUE) {
         nodes = protected_areas_filt_yr,
         region = study_area,
         area_unit = "m2",
-        distance = list(type = "edge", keep = 0.6),
+        distance = ifelse(!is.null(resistance_layer), list(type = "edge", keep = 0.6), list(type = "least-cost", resistance = resistance_layer)),
         probability = 0.5,
         transboundary = input$buffer,
         distance_thresholds = c(input$distance_threshold),

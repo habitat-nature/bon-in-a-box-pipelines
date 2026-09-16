@@ -23,6 +23,11 @@ inputs:
     description: The protected areas (PAs) of interest.
     type: application/geopackage+sqlite3[]
     example: null
+  resistance_layer:
+    label: Resistance layer
+    description: Optional resistance layer for least-cost distance calculations. If not provided, edge distance will be used.
+    type: application/geopackage+sqlite3
+    example: null
   buffer:
     label: Transboundary buffer
     description: Buffer for pulling transboundary protected areas (WDPA data only).
