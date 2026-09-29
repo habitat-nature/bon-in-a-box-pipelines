@@ -4,8 +4,8 @@
       "id": "0",
       "type": "io",
       "position": {
-        "x": 613,
-        "y": 46.666666666666664
+        "x": 694,
+        "y": 67
       },
       "data": {
         "descriptionFile": "data>getGFW.yml"
@@ -15,8 +15,8 @@
       "id": "1",
       "type": "io",
       "position": {
-        "x": 1535,
-        "y": 106.66666666666666
+        "x": 1616,
+        "y": 127
       },
       "data": {
         "descriptionFile": "Forest_loss>forest_loss_GFW.yml"
@@ -26,8 +26,8 @@
       "id": "4",
       "type": "userInput",
       "position": {
-        "x": 304,
-        "y": 230
+        "x": 355,
+        "y": 260.33333333333337
       },
       "dragHandle": ".dragHandle",
       "data": {
@@ -39,8 +39,8 @@
       "id": "5",
       "type": "userInput",
       "position": {
-        "x": 310,
-        "y": 265
+        "x": 361,
+        "y": 295.33333333333337
       },
       "dragHandle": ".dragHandle",
       "data": {
@@ -52,8 +52,8 @@
       "id": "6",
       "type": "userInput",
       "position": {
-        "x": -92.83881232774772,
-        "y": 82
+        "x": 12,
+        "y": 118.66666666666666
       },
       "dragHandle": ".dragHandle",
       "data": {
@@ -64,8 +64,8 @@
       "id": "8",
       "type": "userInput",
       "position": {
-        "x": 12,
-        "y": 12
+        "x": 63,
+        "y": 213.33333333333334
       },
       "dragHandle": ".dragHandle",
       "data": {
@@ -76,21 +76,21 @@
       "id": "9",
       "type": "userInput",
       "position": {
-        "x": 977,
-        "y": 198.66666666666666
+        "x": 327,
+        "y": 83.66666666666666
       },
       "dragHandle": ".dragHandle",
       "data": {
-        "type": "application/geopackage+sqlite3",
-        "value": "/userdata/pnmb.gpkg"
+        "type": "options",
+        "value": "Country or region"
       }
     },
     {
       "id": "10",
       "type": "userInput",
       "position": {
-        "x": 176,
-        "y": 47
+        "x": 227,
+        "y": 48.66666666666666
       },
       "dragHandle": ".dragHandle",
       "data": {
@@ -102,8 +102,8 @@
       "id": "11",
       "type": "output",
       "position": {
-        "x": 2086,
-        "y": 14.166666666666657
+        "x": 2167,
+        "y": 69.5
       },
       "data": {
         "label": "Output"
@@ -113,8 +113,8 @@
       "id": "12",
       "type": "output",
       "position": {
-        "x": 2086,
-        "y": 84.16666666666666
+        "x": 2167,
+        "y": 104.5
       },
       "data": {
         "label": "Output"
@@ -124,8 +124,19 @@
       "id": "13",
       "type": "output",
       "position": {
-        "x": 2086,
-        "y": 49.16666666666666
+        "x": 2167,
+        "y": 34.5
+      },
+      "data": {
+        "label": "Output"
+      }
+    },
+    {
+      "id": "14",
+      "type": "output",
+      "position": {
+        "x": 1616,
+        "y": 12
       },
       "data": {
         "label": "Output"
@@ -133,6 +144,18 @@
     }
   ],
   "edges": [
+    {
+      "source": "9",
+      "target": "0",
+      "targetHandle": "area_type",
+      "id": "xy-edge__9-0area_type"
+    },
+    {
+      "source": "8",
+      "target": "1",
+      "targetHandle": "area_file",
+      "id": "xy-edge__8-1area_file"
+    },
     {
       "source": "0",
       "sourceHandle": "tree_cover",
@@ -206,8 +229,8 @@
     {
       "source": "9",
       "target": "1",
-      "targetHandle": "sf_bbox",
-      "id": "xy-edge__9-1sf_bbox"
+      "targetHandle": "area_type",
+      "id": "xy-edge__9-1area_type"
     },
     {
       "source": "10",
@@ -238,12 +261,44 @@
       "sourceHandle": "forest_change_barplot",
       "target": "13",
       "id": "xy-edge__1forest_change_barplot-13"
+    },
+    {
+      "source": "0",
+      "sourceHandle": "tree_cover",
+      "target": "14",
+      "id": "xy-edge__0tree_cover-14"
+    },
+    {
+      "source": "0",
+      "sourceHandle": "forest_gain",
+      "target": "14",
+      "id": "xy-edge__0forest_gain-14"
+    },
+    {
+      "source": "0",
+      "sourceHandle": "loss_period",
+      "target": "14",
+      "id": "xy-edge__0loss_period-14"
     }
   ],
   "inputs": {
-    "data>getGFW.yml@0|area_type": {
-      "description": "Select whether the download area comes from the country/region chooser, a polygon file, or a raster file.",
-      "label": "Download area type",
+    "pipeline@6": {
+      "label": "Country, region, bounding box, and output CRS",
+      "description": "Select a country or region, or draw a bounding box, and select the CRS used for the downloaded Global Forest Watch data and associated analysis.\n\nThis must be in a **projected CRS (i.e. units: metres)** to be compatible with the resolution in metres.",
+      "type": "bboxCRS",
+      "example": null,
+      "weight": 0
+    },
+    "pipeline@8": {
+      "label": "Polygon or raster area file (optional)",
+      "description": "Select one polygon or raster file if you wish to crop the analysis to a specific area.\n\nA polygon defines both the download extent and the exact analysis mask; a raster defines the extent.\n\nPaste the path to the shapefile into the box.",
+      "type": "application/octet-stream",
+      "example": null,
+      "weight": 1
+    },
+    "pipeline@9": {
+      "description": "Select the analysis area you are using: the country/region chooser, a polygon file, or a raster file.",
+      "label": "Area type",
       "type": "options",
       "options": [
         "Country or region",
@@ -251,77 +306,56 @@
         "Raster"
       ],
       "example": "Country or region",
-      "weight": 0
-    },
-    "pipeline@6": {
-      "label": "Country, region, bounding box, and output CRS",
-      "description": "Select a country or region, or draw a bounding box, and select the CRS used for the downloaded GFW rasters. \n\nThis must be in a projected CRS to be compatible with the resolution in metres.",
-      "type": "bboxCRS",
-      "example": null,
-      "weight": 1
-    },
-    "pipeline@8": {
-      "label": "Polygon or raster area file",
-      "description": "Select one polygon or raster file when Polygon or Raster is chosen above. Leave blank for Country or region. For pixel-for-pixel agreement with the combined forest-change script, choose Polygon and use the same polygon as the analysis area.",
-      "type": "application/octet-stream",
-      "example": null,
       "weight": 2
-    },
-    "pipeline@9": {
-      "label": "bounding box",
-      "description": "Optional bounding box to clip the analysis. If provided, the analysis is clipped to the intersection of each Guinea region and this AOI. If omitted, the full extent of each Guinea region is used.",
-      "type": "application/geopackage+sqlite3",
-      "example": null,
-      "weight": 3
     },
     "pipeline@10": {
       "label": "Output spatial resolution",
-      "description": "Spatial resolution in metres for the downloaded GFW layers.",
+      "description": "Spatial resolution in **metres** for the downloaded GFW layers.",
       "type": "float",
       "example": 50,
-      "weight": 4
+      "weight": 3
     },
     "pipeline@4": {
       "label": "Initial time",
       "description": "Initial year for the forest-loss period.",
       "type": "int",
       "example": 2000,
-      "weight": 5
+      "weight": 4
     },
     "pipeline@5": {
       "label": "Final time",
       "description": "Final year for the forest-loss period.",
       "type": "int",
       "example": 2020,
-      "weight": 6
+      "weight": 5
     },
     "Forest_loss>forest_loss_GFW.yml@1|min_forest_Forest_Guinea": {
-      "description": "Minimum tree cover percentage for the Forest Guinea region. Acts as a filter for the Global Forest Watch Data.",
+      "description": "Minimum tree cover percentage for the Forest Guinea region. Acts as a filter for the Global Forest Watch Data.\n\nThis will only be used if the area selected includes the Forest Guinea region.",
       "label": "min forest (Forest Guinea)",
       "type": "int",
       "example": 30,
-      "weight": 7
+      "weight": 6
     },
     "Forest_loss>forest_loss_GFW.yml@1|min_forest_Maritime_Guinea": {
-      "description": "Minimum tree cover percentage for the Maritime Guinea region. Acts as a filter for the Global Forest Watch Data.",
+      "description": "Minimum tree cover percentage for the Maritime Guinea region. Acts as a filter for the Global Forest Watch Data.\n\nThis will only be used if the area selected includes the Maritime Guinea region.",
       "label": "min forest (Maritime Guinea)",
       "type": "int",
       "example": 25,
-      "weight": 8
+      "weight": 7
     },
     "Forest_loss>forest_loss_GFW.yml@1|min_forest_Middle_Guinea": {
-      "description": "Minimum tree cover percentage for the Middle Guinea region. Acts as a filter for the Global Forest Watch Data.",
+      "description": "Minimum tree cover percentage for the Middle Guinea region. Acts as a filter for the Global Forest Watch Data.\n\nThis will only be used if the area selected includes the Middle Guinea region.",
       "label": "min forest (Middle Guinea)",
       "type": "int",
       "example": 20,
-      "weight": 9
+      "weight": 8
     },
     "Forest_loss>forest_loss_GFW.yml@1|min_forest_Upper_Guinea": {
-      "description": "Minimum tree cover percentage for the Upper Guinea region. Acts as a filter for the Global Forest Watch Data.",
+      "description": "Minimum tree cover percentage for the Upper Guinea region. Acts as a filter for the Global Forest Watch Data.\n\nThis will only be used if the area selected includes the Upper Guinea region.",
       "label": "min forest (Upper Guinea)",
       "type": "int",
       "example": 35,
-      "weight": 10
+      "weight": 9
     }
   },
   "outputs": {
@@ -346,11 +380,29 @@
       "label": "Forest loss barplot",
       "type": "image/png",
       "weight": 2
+    },
+    "data>getGFW.yml@0|tree_cover": {
+      "description": "Tree-cover percentage raster for 2000.",
+      "label": "GFW tree cover in 2000",
+      "type": "image/tiff;application=geotiff[]",
+      "weight": 3
+    },
+    "data>getGFW.yml@0|forest_gain": {
+      "description": "Global Forest Watch forest-gain between the initial and final year.",
+      "label": "GFW forest gain",
+      "type": "image/tiff;application=geotiff[]",
+      "weight": 4
+    },
+    "data>getGFW.yml@0|loss_period": {
+      "description": "Global Forest Watch forest loss after the initial year through the final year.",
+      "label": "GFW loss during analysis period",
+      "type": "image/tiff;application=geotiff[]",
+      "weight": 5
     }
   },
   "metadata": {
     "name": "Measure Forest Change",
-    "description": "\n## Introduction\nThe Measure Forest Change pipeline maps forest loss, forest gain, and areas with no detected change using Global Forest Watch (GFW) data. It uses tree-cover percentage in 2000 as the forest baseline, applies a user-defined minimum tree-cover threshold for each of Guinea's four natural regions, and removes forest loss recorded before the selected initial year to create a baseline for the analysis period. The pipeline then combines this baseline with forest-loss and forest-gain layers to classify each mapped pixel as no change, loss, or gain.\n\nThe analysis is run separately for Forest Guinea, Maritime Guinea, Middle Guinea, and Upper Guinea. Users can analyze the full regions or clip them to a selected area of interest. Results include a forest-change raster, a chart of forest loss as a percentage of baseline forest, and a chart of the area in each change category by region.\n## Uses\nThe pipeline can be used to describe and compare forest-cover change among Guinea's natural regions. It can support forest monitoring, conservation planning, restoration assessment, and reporting by showing where forest loss or gain has been detected and summarizing the magnitude of change within each region. Region-specific tree-cover thresholds allow users to adapt the definition of forest to differences in vegetation among the four regions.\n## Pipeline limitations\n* The pipeline is currently specific to Guinea because it uses a bundled boundary layer for Forest Guinea, Maritime Guinea, Middle Guinea, and Upper Guinea. An uploaded polygon or selected bounding box clips these regions but does not replace them.\n* Results depend on the selected minimum tree-cover thresholds. Different thresholds can substantially change the mapped baseline forest area and the resulting loss percentages.\n* GFW tree-cover loss identifies complete removal of tree-cover canopy at the pixel scale and does not by itself distinguish permanent deforestation from temporary loss, harvesting, fire, or other disturbances.\n* The forest-gain layer represents gain over its source data period rather than annual gain for the user-selected interval. Gain should therefore not be interpreted as occurring specifically between the selected initial and final years.\n* Forest loss is calculated as a percentage of baseline forest (no change plus loss); forest gain is excluded from the denominator.\n* Output accuracy is constrained by the spatial resolution and classification accuracy of the source data. Coarser user-selected resolutions may obscure small or fragmented changes.\n## Before you start\nNo API key is required. Select an initial and final year supported by the GFW loss-year collection, choose an output coordinate reference system appropriate for area calculations, and specify the output spatial resolution in metres.\n\nChoose whether the download area is defined by the country/region selector, a polygon, or a raster. When using a polygon or raster, provide the corresponding file. The optional analysis-area polygon further clips the four Guinea regions. Set a minimum tree-cover percentage for each region; pixels below that threshold are not treated as baseline forest.\n\nThe forest-change raster uses the values 1 for no change, 2 for loss, and 3 for gain. The forest-loss chart reports loss relative to baseline forest, while the area chart reports hectares of no change, loss, and gain for each included region.\n\nView the [GEO BON STAC catalog](https://stac.geobon.org/) to inspect the GFW tree-cover and loss-year collections used by the pipeline.\n\nTo reproduce the combined forest-change script exactly, select Polygon as the download area and supply the same polygon used for the analysis, with identical CRS, resolution, years, and thresholds. For a full-Guinea comparison, use the bundled Guinea region boundaries as the download polygon. Different download extents can shift the pixel grid.",
+    "description": "\n## Introduction\nThe Measure Forest Change pipeline maps forest loss, forest gain, and areas with no detected change using Global Forest Watch (GFW) data. It uses tree-cover percentage in 2000 as the forest baseline, applies a user-defined minimum tree-cover threshold for each of Guinea's four natural regions, and removes forest loss recorded before the selected initial year to create a baseline for the analysis period. The pipeline then combines this baseline with forest-loss and forest-gain layers to classify each mapped pixel as no change, loss, or gain.\n\nThe analysis is run separately for Forest Guinea, Maritime Guinea, Middle Guinea, and Upper Guinea. Users can analyze the full regions or clip them to a selected area of interest. Results include a forest-change raster, a chart of forest loss as a percentage of baseline forest, and a chart of the area in each change category by region.\n## Uses\nThe pipeline can be used to describe and compare forest-cover change among Guinea's natural regions. It can support forest monitoring, conservation planning, restoration assessment, and reporting by showing where forest loss or gain has been detected and summarizing the magnitude of change within each region. Region-specific tree-cover thresholds allow users to adapt the definition of forest to differences in vegetation among the four regions.\n## Pipeline limitations\n* The pipeline is currently specific to Guinea because it uses a bundled boundary layer for Forest Guinea, Maritime Guinea, Middle Guinea, and Upper Guinea. An uploaded polygon or selected bounding box clips these regions but does not replace them.\n* Results depend on the selected minimum tree-cover thresholds. Different thresholds can substantially change the mapped baseline forest area and the resulting loss percentages.\n* GFW tree-cover loss identifies complete removal of tree-cover canopy at the pixel scale and does not by itself distinguish permanent deforestation from temporary loss, harvesting, fire, or other disturbances.\n* The forest-gain layer represents gain over its source data period rather than annual gain for the user-selected interval. Gain should therefore not be interpreted as occurring specifically between the selected initial and final years.\n* Forest loss is calculated as a percentage of baseline forest (no change plus loss); forest gain is excluded from the denominator.\n* Output accuracy is constrained by the spatial resolution and classification accuracy of the source data. Coarser user-selected resolutions may obscure small or fragmented changes.\n## Before you start\nNo API key is required. Select an initial and final year supported by the GFW loss-year collection, choose an output coordinate reference system appropriate for area calculations, and specify the output spatial resolution in metres.\n\nChoose whether the download area is defined by the country/region selector, a polygon, or a raster. When using a polygon or raster, provide the corresponding file. The same polygon clips the four Guinea regions when Polygon is selected. Otherwise, analysis is restricted to the downloaded raster coverage. Set a minimum tree-cover percentage for each region; pixels below that threshold are not treated as baseline forest.\n\nThe forest-change raster uses the values 1 for no change, 2 for loss, and 3 for gain. The forest-loss chart reports loss relative to baseline forest, while the area chart reports hectares of no change, loss, and gain for each included region.\n\nView the [GEO BON STAC catalog](https://stac.geobon.org/) to inspect the GFW tree-cover and loss-year collections used by the pipeline.\n\nTo reproduce the combined forest-change script exactly, select Polygon as the area type and supply the reference analysis polygon, with identical CRS, resolution, years, and thresholds. For a full-Guinea comparison, use the bundled Guinea region boundaries as the download polygon. Different download extents can shift the pixel grid.",
     "author": [
       {
         "name": "Maria Isabel Arce-Plata",

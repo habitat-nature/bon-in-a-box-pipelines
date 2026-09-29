@@ -10,6 +10,8 @@ author:
     identifier: https://orcid.org/0000-0002-5967-9156
   - name: Jurie Theron
     identifier: https://orcid.org/0000-0003-0739-8720
+  - name: Samara Manzin
+    identifier: https://orcid.org/0009-0005-9134-9981
 license: CC BY
 inputs:
   tree_cover:
@@ -38,11 +40,20 @@ inputs:
     description: Object containing CRS.
     type: bboxCRS
     example:
-  sf_bbox:
-    label: bounding box
-    description: Optional bounding box to clip the analysis. If provided, the analysis is clipped to the intersection of each Guinea region and this AOI. If omitted, the full extent of each Guinea region is used.
-    type: application/geopackage+sqlite3
-    example: /userdata/Guinea/pnmb.gpkg
+  area_type:
+    label: Area type
+    description: Use the same area type as the GFW download. Polygon clips to the supplied polygon; other choices use downloaded coverage.
+    type: options
+    options:
+      - Country or region
+      - Polygon
+      - Raster
+    example: Country or region
+  area_file:
+    label: Polygon or raster area file
+    description: Shared download area file. When Polygon is selected, its geometry also clips the analysis.
+    type: application/octet-stream
+    example: null
   min_forest_Forest_Guinea:
     label: min forest (Forest Guinea)
     description: Minimum tree cover percentage for the Forest Guinea region.

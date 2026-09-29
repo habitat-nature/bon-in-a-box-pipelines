@@ -52,10 +52,6 @@ srs_cube <- suppressWarnings(if (check_srs) {
   srs
 })
 
-# AOI for the analysis to run within (optional)
-#v_path_bbox_analysis <- "/home/jurietheron/Projects/bon-in-a-box-pipelines/scripts/Forest_loss/pnmb.gpkg"
-v_path_bbox_analysis <- if (is.null(input$sf_bbox)) NA else input$sf_bbox
-
 # Min forest threshold for GFW (level of forest for the species)
 min_forest_Forest_Guinea <- if (is.null(input$min_forest_Forest_Guinea)) {
   NA
@@ -115,18 +111,40 @@ gin_for_shape <- st_read(file.path(path_script, "Forest_loss/gin_admbnda_adm1_oc
   st_transform(sf_srs)
 print(gin_for_shape)
 
-# Load optional AOI — if provided, clip Guinea regions and downloads to it; otherwise use full Guinea extent
-if (!is.na(v_path_bbox_analysis)) {
-  sf_bbox_analysis <- st_read(v_path_bbox_analysis) |> st_transform(sf_srs)
-  sf_ext_srs <- sf_bbox_analysis |> st_bbox()
-  gin_for_shape_intersect <- gin_for_shape[
-    unlist(sf::st_intersects(sf_bbox_analysis, gin_for_shape)),
-  ]
-} else {
-  sf_bbox_analysis <- NULL
-  sf_ext_srs <- gin_for_shape |> st_bbox()
-  gin_for_shape_intersect <- gin_for_shape
+# Use the downloaded footprint, with the shared polygon as an exact mask.
+download_extent <- terra::ext(r_GFW_TC)
+analysis_coverage <- sf::st_as_sfc(sf::st_bbox(
+  c(
+    xmin = unname(download_extent$xmin),
+    ymin = unname(download_extent$ymin),
+    xmax = unname(download_extent$xmax),
+    ymax = unname(download_extent$ymax)
+  ),
+  crs = sf::st_crs(terra::crs(r_GFW_TC))
+)) |>
+  sf::st_transform(sf_srs)
+
+if (identical(input$area_type, "Polygon")) {
+  if (is.null(input$area_file) || !nzchar(input$area_file)) {
+    biab_error_stop("Select a polygon area file.")
+  }
+  area_polygon <- sf::st_read(input$area_file, quiet = TRUE) |>
+    sf::st_transform(sf_srs) |>
+    sf::st_geometry() |>
+    sf::st_union()
+  analysis_coverage <- sf::st_intersection(analysis_coverage, area_polygon)
 }
+
+gin_for_shape_intersect <- sf::st_intersection(gin_for_shape, analysis_coverage)
+# Exclude empty intersections and regions that only touch the footprint.
+gin_for_shape_intersect <- gin_for_shape_intersect[
+  !sf::st_is_empty(gin_for_shape_intersect) &
+    as.numeric(sf::st_area(gin_for_shape_intersect)) > 0,
+]
+if (nrow(gin_for_shape_intersect) == 0) {
+  biab_error_stop("The selected analysis area does not overlap any Guinea region within the downloaded GFW coverage.")
+}
+sf_ext_srs <- gin_for_shape_intersect |> st_bbox()
 print(sf_ext_srs)
 
 
@@ -136,11 +154,8 @@ print(sf_ext_srs)
 #gin_group_index = 1
 habitat_change_map <- list()
 for (gin_group_index in seq_len(nrow(gin_for_shape_intersect))) {
-  # Select geometry, clipped to the AOI if provided
+  # Select the region already clipped to the shared analysis area
   shape <- gin_for_shape_intersect[gin_group_index, ]
-  if (!is.null(sf_bbox_analysis)) {
-    shape <- st_intersection(shape, sf_bbox_analysis)
-  }
   print(paste0("========== Processing: ", shape$group, " =========="))
 
   # Subset the tree threshold values
