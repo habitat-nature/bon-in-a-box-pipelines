@@ -2,17 +2,6 @@
 library(gdalcubes)
 setwd(outputFolder)
 
-# Older gdalcubes versions read proj:epsg rather than STAC's newer proj:code.
-stac_projection_compat <- function(item) {
-  code <- item$properties[["proj:code"]]
-  if (is.null(item$properties[["proj:epsg"]]) &&
-      is.character(code) && length(code) == 1L && !is.na(code) &&
-      grepl("^EPSG:[0-9]+$", code, ignore.case = TRUE)) {
-    item$properties[["proj:epsg"]] <- as.integer(sub("^[^:]+:", "", code))
-  }
-  item
-}
-
 ### Load cube func
 load_cube <-
   function(stac_path = "https://io.biodiversite-quebec.ca/stac/",
@@ -96,7 +85,6 @@ load_cube <-
     }else{
       feats<-it_obj$features
     }
-    feats <- lapply(feats, stac_projection_compat)
     print(ids)
     if (!is.null(variable)) {
       print("Variable is null")
