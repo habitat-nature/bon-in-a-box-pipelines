@@ -39,6 +39,57 @@ if ((input$year_int) >= (input$years - input$start_year)) {
   biab_error_stop("Please make sure the year interval is smaller than the difference between start year and year for cutoff.")
 }
 
+resistance_layer <- input$resistance_layer
+
+if (is.null(resistance_layer)) {
+  print("No resistance layer provided, using edge distance for ProtConn analysis.")
+} else {
+  resistance_layer <- rast(resistance_layer)
+  print("Resistance layer provided, using least-cost distance for ProtConn analysis.")
+  if(!isTRUE(sf::st_crs(terra::crs(resistance_layer))$epsg == crs_input)) {
+    print("Reprojecting resistance raster to the analysis CRS.")
+
+    resistance_layer <- terra::project(
+      resistance_layer,
+      crs_input,
+      method = "bilinear"
+    )
+  }
+    # Include the transboundary buffer, when provided.
+  required_area <- sf::st_union(study_area)
+  buffer_distance <- if (is.null(input$buffer)) 0 else input$buffer
+
+  if (buffer_distance > 0) {
+    required_area <- sf::st_buffer(
+      required_area,
+      dist = buffer_distance
+    )
+  }
+
+  # The raster must contain the required area; it can extend beyond it.
+  required_extent <- sf::st_bbox(required_area)
+  raster_extent <- as.vector(terra::ext(resistance_layer))
+
+  covers_area <-
+    raster_extent[1] <= required_extent[["xmin"]] &&
+    raster_extent[2] >= required_extent[["xmax"]] &&
+    raster_extent[3] <= required_extent[["ymin"]] &&
+    raster_extent[4] >= required_extent[["ymax"]]
+
+  if (!covers_area) {
+    biab_error_stop(
+      paste(
+        "The resistance raster does not cover the full study area",
+        "and transboundary buffer.",
+        "Provide a raster with a larger extent."
+      )
+    )
+  }
+}
+
+print("Resistance layer:")
+print(resistance_layer)
+
 units::units_options(set_units_mode = "standard")
 protected_areas_path <- c()
 # Load study area shapefile
@@ -267,7 +318,11 @@ protconn_result <- tryCatch(
       nodes = protected_areas_simp,
       region = study_area,
       area_unit = "m2",
-      distance = list(type = "edge", keep = 0.6),
+      distance = if (is.null(resistance_layer)) {
+        list(type = "edge", keep = 0.6)
+      } else {
+       list(type = "least-cost", resistance = resistance_layer)
+      },
       probability = 0.5,
       transboundary = input$buffer,
       distance_thresholds = c(input$distance_threshold),
@@ -388,7 +443,11 @@ if (input$time_series == TRUE) {
         nodes = protected_areas_filt_yr,
         region = study_area,
         area_unit = "m2",
-        distance = list(type = "edge", keep = 0.6),
+        distance = if (is.null(resistance_layer)) {
+          list(type = "edge", keep = 0.6)
+        } else {
+         list(type = "least-cost", resistance = resistance_layer)
+        },
         probability = 0.5,
         transboundary = input$buffer,
         distance_thresholds = c(input$distance_threshold),
@@ -486,4 +545,9 @@ if (input$time_series == TRUE) {
   protected_areas_path <- protected_areas_simp_path
 }
 
+if (!is.null(resistance_layer)) {
+resistance_path <- file.path(outputFolder, "resistance_layer.tif")
+writeRaster(resistance_layer, resistance_path)
+biab_output("resistance_layer", resistance_path)
+}
 biab_output("protected_areas", protected_areas_path[!is.na(protected_areas_path)])
