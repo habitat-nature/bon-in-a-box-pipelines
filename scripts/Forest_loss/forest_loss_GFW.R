@@ -53,35 +53,19 @@ srs_cube <- suppressWarnings(if (check_srs) {
 })
 
 # Min forest threshold for GFW (level of forest for the species)
-min_forest_Forest_Guinea <- if (is.null(input$min_forest_Forest_Guinea)) {
-  NA
-} else {
-  input$min_forest_Forest_Guinea
+read_forest_threshold <- function(id, legacy_id) {
+  threshold <- input[[id]]
+  if (is.null(threshold)) {
+    threshold <- input[[legacy_id]]
+  }
+  if (is.null(threshold)) NA_real_ else threshold
 }
-min_forest_Maritime_Guinea <- if (is.null(input$min_forest_Maritime_Guinea)) {
-  NA
-} else {
-  input$min_forest_Maritime_Guinea
-}
-min_forest_Middle_Guinea <- if (is.null(input$min_forest_Middle_Guinea)) {
-  NA
-} else {
-  input$min_forest_Middle_Guinea
-}
-min_forest_Upper_Guinea <- if (is.null(input$min_forest_Upper_Guinea)) {
-  NA
-} else {
-  input$min_forest_Upper_Guinea
-}
-#min_forest_Forest_Guinea <- 25
-#min_forest_Maritime_Guinea <- 28
-#min_forest_Middle_Guinea <- 23
-#min_forest_Upper_Guinea <- 24
+
 min_forest <- c(
-  "Forest Guinea" = min_forest_Forest_Guinea,
-  "Maritime Guinea" = min_forest_Maritime_Guinea,
-  "Middle Guinea" = min_forest_Middle_Guinea,
-  "Upper Guinea" = min_forest_Upper_Guinea
+  "Forest Guinea" = read_forest_threshold("min_forest_forest_guinea", "min_forest_Forest_Guinea"),
+  "Maritime Guinea" = read_forest_threshold("min_forest_maritime_guinea", "min_forest_Maritime_Guinea"),
+  "Middle Guinea" = read_forest_threshold("min_forest_middle_guinea", "min_forest_Middle_Guinea"),
+  "Upper Guinea" = read_forest_threshold("min_forest_upper_guinea", "min_forest_Upper_Guinea")
 )
 
 # define time range
@@ -240,25 +224,38 @@ suppressWarnings(
 biab_output("habitat_change_map", habitat_change_map_path)
 
 #-------------------------------------------------------------------------------------------------------------------
-# 4. Barplot of % per change category, per Guinea region
+# 4. Barplot of forest loss percentage by region and for Guinea
 #-------------------------------------------------------------------------------------------------------------------
 print("========== Building forest change barplot ==========")
 
-# Category codes from the per-region rasters: 1 = no change, 2 = loss, 3 = gain
-# Forest loss % = loss / baseline forest, where baseline forest = no change + loss (gain excluded)
-loss_pct_df <- purrr::map_dfr(seq_along(habitat_change_map), function(i) {
-  r <- habitat_change_map[[i]]
-  freq_tab <- terra::freq(r) # columns: layer, value, count
-  counts <- setNames(freq_tab$count, as.character(freq_tab$value))
-  n_nochange <- unname(ifelse(is.na(counts["1"]), 0, counts["1"]))
-  n_loss     <- unname(ifelse(is.na(counts["2"]), 0, counts["2"]))
-  baseline   <- n_nochange + n_loss
+# Count the merged raster for Guinea so shared boundary cells are counted once.
+plot_rasters <- c(habitat_change_map, list(habiatat_change_map_merge))
+region_names <- as.character(gin_for_shape_intersect$group)
+plot_regions <- c(region_names, "Guinea total")
+region_levels <- c(sort(unique(region_names)), "Guinea total")
+category_codes <- c("1", "2", "3")
+
+change_counts <- purrr::map_dfr(seq_along(plot_rasters), function(i) {
+  freq_tab <- terra::freq(plot_rasters[[i]])
+  code_indices <- match(category_codes, freq_tab$value, nomatch = 0L)
   data.frame(
-    region   = gin_for_shape_intersect$group[i],
-    loss_pct = if (baseline > 0) 100 * n_loss / baseline else NA_real_,
-    stringsAsFactors = FALSE
+    region = factor(plot_regions[i], levels = region_levels),
+    code = category_codes,
+    count = c(0, freq_tab$count)[code_indices + 1L]
   )
 })
+
+# Forest loss % = loss / baseline forest, where baseline forest = no change + loss (gain excluded)
+loss_pct_df <- change_counts |>
+  dplyr::group_by(region) |>
+  dplyr::summarise(
+    baseline = sum(count[code %in% c("1", "2")]),
+    loss = sum(count[code == "2"]),
+    .groups = "drop"
+  ) |>
+  dplyr::mutate(
+    loss_pct = dplyr::if_else(baseline > 0, 100 * loss / baseline, NA_real_)
+  )
 
 print(loss_pct_df)
 
@@ -286,26 +283,19 @@ ggplot2::ggsave(change_barplot_path, p_change, width = 8, height = 5, dpi = 150)
 biab_output("forest_change_barplot", change_barplot_path)
 
 #-------------------------------------------------------------------------------------------------------------------
-# 5. Barplot of area (ha) per change category, per Guinea region
+# 5. Barplot of area (ha) per change category by region and for Guinea
 #-------------------------------------------------------------------------------------------------------------------
 print("========== Building forest area barplot ==========")
 
 cat_labels <- c("1" = "No change", "2" = "Loss", "3" = "Gain")
 cell_area_ha <- (spat_res^2) / 10000 # projected units assumed metres -> hectares
 
-# Tally area (ha) per category for each stored region raster
-change_area_df <- purrr::map_dfr(seq_along(habitat_change_map), function(i) {
-  r <- habitat_change_map[[i]]
-  freq_tab <- terra::freq(r) # columns: layer, value, count
-  data.frame(
-    region  = gin_for_shape_intersect$group[i],
-    code    = as.character(freq_tab$value),
-    area_ha = freq_tab$count * cell_area_ha,
-    stringsAsFactors = FALSE
+change_area_df <- change_counts |>
+  dplyr::filter(count > 0 | region == "Guinea total") |>
+  dplyr::mutate(
+    area_ha = count * cell_area_ha,
+    category = factor(cat_labels[code], levels = unname(cat_labels))
   )
-}) |>
-  dplyr::filter(!is.na(code), code %in% names(cat_labels)) |>
-  dplyr::mutate(category = factor(cat_labels[code], levels = unname(cat_labels)))
 
 print(change_area_df)
 

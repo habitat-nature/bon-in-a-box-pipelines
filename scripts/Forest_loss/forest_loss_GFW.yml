@@ -54,30 +54,30 @@ inputs:
     description: Shared download area file. When Polygon is selected, its geometry also clips the analysis.
     type: application/octet-stream
     example: null
-  min_forest_Forest_Guinea:
+  min_forest_forest_guinea:
     label: min forest (Forest Guinea)
     description: Minimum tree cover percentage for the Forest Guinea region.
       Acts as a filter for the Global Forest Watch Data.
     type: int
-    example: 30
-  min_forest_Maritime_Guinea:
+    example: 25
+  min_forest_maritime_guinea:
     label: min forest (Maritime Guinea)
     description: Minimum tree cover percentage for the Maritime Guinea region.
       Acts as a filter for the Global Forest Watch Data.
     type: int
-    example: 25
-  min_forest_Middle_Guinea:
+    example: 15
+  min_forest_middle_guinea:
     label: min forest (Middle Guinea)
     description: Minimum tree cover percentage for the Middle Guinea region.
       Acts as a filter for the Global Forest Watch Data.
     type: int
-    example: 20
-  min_forest_Upper_Guinea:
+    example: 15
+  min_forest_upper_guinea:
     label: min forest (Upper Guinea)
     description: Minimum tree cover percentage for the Upper Guinea region.
       Acts as a filter for the Global Forest Watch Data.
     type: int
-    example: 35
+    example: 15
   t_0:
     label: initial time
     description: Year where the analysis should start. Starts in 2000, check the time interval available for the
@@ -99,11 +99,11 @@ outputs:
     range: [1, 3]
   forest_change_barplot:
     label: Forest loss barplot
-    description: Barplot of forest loss as a percentage of baseline forest (no change + loss, gain excluded) for each Guinea region.
+    description: Forest loss as a percentage of baseline forest (no change + loss, gain excluded), by region and for Guinea within the analysis area.
     type: image/png
   forest_area_barplot:
     label: Forest area barplot
-    description: Grouped barplot of area (ha) per change category (no change, loss, gain) for each Guinea region.
+    description: Area (ha) by change category (no change, loss, gain), by region and for Guinea within the analysis area.
     type: image/png
 conda:
   channels:

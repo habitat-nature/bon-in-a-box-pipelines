@@ -53,7 +53,13 @@ t_n <- input$t_n
 t_n_code <- as.numeric(substr(t_n, start = 3, stop = 4))
 
 srs <- paste0(input$crs$CRS$authority, ":", input$crs$CRS$code)
+if (terra::is.lonlat(srs)) {
+  biab_error_stop(sprintf("The current CRS %s is in latitude longitude. Please choose a projected CRS that uses metres.", srs))
+}
 sf_srs <- sf::st_crs(srs)
+if (!identical(sf_srs$units_gdal, "metre")) {
+  biab_error_stop(sprintf("The current CRS %s does not use metres. Please choose a projected CRS that uses metres.", srs))
+}
 srs_cube <- srs
 
 area_type <- input$area_type
