@@ -1,5 +1,5 @@
 #-------------------------------------------------------------------------------
-# This script measures forest loss across Guinea using GFW data
+# This script measures forest loss by subregion using GFW data
 #-------------------------------------------------------------------------------
 
 #-------------------------------------------------------------------------------
@@ -28,8 +28,6 @@ if (!dir.exists(file.path(outputFolder))) {
 } else {
   print("dir exists")
 }
-#path_script <- "scripts"
-path_script <- Sys.getenv("SCRIPT_LOCATION")
 
 #-------------------------------------------------------------------------------
 # Prepare user inputs for analysis
@@ -52,21 +50,7 @@ srs_cube <- suppressWarnings(if (check_srs) {
   srs
 })
 
-# Min forest threshold for GFW (level of forest for the species)
-read_forest_threshold <- function(id, legacy_id) {
-  threshold <- input[[id]]
-  if (is.null(threshold)) {
-    threshold <- input[[legacy_id]]
-  }
-  if (is.null(threshold)) NA_real_ else threshold
-}
-
-min_forest <- c(
-  "Forest Guinea" = read_forest_threshold("min_forest_forest_guinea", "min_forest_Forest_Guinea"),
-  "Maritime Guinea" = read_forest_threshold("min_forest_maritime_guinea", "min_forest_Maritime_Guinea"),
-  "Middle Guinea" = read_forest_threshold("min_forest_middle_guinea", "min_forest_Middle_Guinea"),
-  "Upper Guinea" = read_forest_threshold("min_forest_upper_guinea", "min_forest_Upper_Guinea")
-)
+use_subregions <- !is.null(input$region_boundaries) && nzchar(trimws(input$region_boundaries))
 
 # define time range
 #t_0 <- 2010
@@ -88,14 +72,7 @@ r_GFW_gain_aoi <- terra::rast(input$forest_gain)
 #-------------------------------------------------------------------------------------------------------------------
 # 1. Load inputs
 #-------------------------------------------------------------------------------------------------------------------
-# Load Guinea forest groupings polygon
-#gin_for_shape <- st_read("/home/jurietheron/Projects/bon-in-a-box-pipelines/scripts/Forest_loss/gin_admbnda_adm1_ocha.gpkg") |>
-#  st_transform(sf_srs)
-gin_for_shape <- st_read(file.path(path_script, "Forest_loss/gin_admbnda_adm1_ocha.gpkg")) |>
-  st_transform(sf_srs)
-print(gin_for_shape)
-
-# Use the downloaded footprint, with the shared polygon as an exact mask.
+# Limit the analysis to the downloaded footprint and the selected area.
 download_extent <- terra::ext(r_GFW_TC)
 analysis_coverage <- sf::st_as_sfc(sf::st_bbox(
   c(
@@ -117,34 +94,137 @@ if (identical(input$area_type, "Polygon")) {
     sf::st_geometry() |>
     sf::st_union()
   analysis_coverage <- sf::st_intersection(analysis_coverage, area_polygon)
+} else if (!use_subregions && identical(input$area_type, "Raster")) {
+  if (is.null(input$area_file) || !nzchar(input$area_file)) {
+    biab_error_stop("Select a raster area file.")
+  }
+  area_raster <- terra::rast(input$area_file)
+  raster_crs <- sf::st_crs(terra::crs(area_raster))
+  if (is.na(raster_crs)) {
+    biab_error_stop("The area raster must have a coordinate reference system.")
+  }
+  raster_footprint <- terra::as.polygons(terra::ext(area_raster), crs = terra::crs(area_raster)) |>
+    sf::st_as_sf() |>
+    sf::st_geometry() |>
+    sf::st_transform(sf_srs)
+  analysis_coverage <- sf::st_intersection(analysis_coverage, raster_footprint)
+} else if (!use_subregions && identical(input$area_type, "Country or region") &&
+           length(input$crs$bbox) == 4L) {
+  bbox_values <- setNames(input$crs$bbox, c("xmin", "ymin", "xmax", "ymax"))
+  selected_bbox <- sf::st_as_sfc(sf::st_bbox(bbox_values, crs = sf_srs))
+  analysis_coverage <- sf::st_intersection(analysis_coverage, selected_bbox)
 }
 
-gin_for_shape_intersect <- sf::st_intersection(gin_for_shape, analysis_coverage)
-# Exclude empty intersections and regions that only touch the footprint.
-gin_for_shape_intersect <- gin_for_shape_intersect[
-  !sf::st_is_empty(gin_for_shape_intersect) &
-    as.numeric(sf::st_area(gin_for_shape_intersect)) > 0,
-]
-if (nrow(gin_for_shape_intersect) == 0) {
-  biab_error_stop("The selected analysis area does not overlap any Guinea region within the downloaded GFW coverage.")
+if (length(analysis_coverage) == 0 || !any(as.numeric(sf::st_area(analysis_coverage)) > 0)) {
+  biab_error_stop("The selected area does not overlap the downloaded GFW coverage.")
 }
-sf_ext_srs <- gin_for_shape_intersect |> st_bbox()
-print(sf_ext_srs)
+if (use_subregions) {
+  threshold_text <- trimws(input$region_thresholds)
+  if (length(threshold_text) == 0 || !nzchar(threshold_text)) {
+    biab_error_stop("Enter the threshold table with the header region, threshold and one row per subregion.")
+  }
+  # Accept backslashes as row separators when the form uses a single-line text field.
+  if (!grepl("\n", threshold_text, fixed = TRUE)) {
+    threshold_text <- gsub("\\", "\n", threshold_text, fixed = TRUE)
+  } else {
+    threshold_text <- gsub("\\\\\\r?\\n", "\n", threshold_text)
+  }
+  thresholds <- readr::read_csv(
+    I(threshold_text),
+    col_types = readr::cols(.default = readr::col_character()),
+    show_col_types = FALSE
+  )
+  if (!identical(names(thresholds), c("region", "threshold")) ||
+      nrow(thresholds) == 0 || nrow(readr::problems(thresholds)) > 0) {
+    biab_error_stop("Enter the header region, threshold followed by one name and percentage per row.")
+  }
+  thresholds$region <- trimws(thresholds$region)
+  if (anyNA(thresholds$region) || any(!nzchar(thresholds$region))) {
+    biab_error_stop("Every threshold row must have a subregion name.")
+  }
+  duplicate_regions <- unique(thresholds$region[duplicated(thresholds$region)])
+  if (length(duplicate_regions) > 0) {
+    biab_error_stop(paste("Duplicate threshold rows for:", paste(duplicate_regions, collapse = ", ")))
+  }
+  thresholds$threshold <- suppressWarnings(as.numeric(thresholds$threshold))
+  invalid_thresholds <- !is.finite(thresholds$threshold) |
+    thresholds$threshold < 0 | thresholds$threshold > 100
+  if (any(invalid_thresholds)) {
+    biab_error_stop(paste(
+      "Minimum tree cover must be a number from 0 to 100 for:",
+      paste(thresholds$region[invalid_thresholds], collapse = ", ")
+    ))
+  }
 
+  regions <- sf::st_read(input$region_boundaries, quiet = TRUE)
+  region_fields <- names(sf::st_drop_geometry(regions))
+  if (is.null(input$region_field) || !input$region_field %in% region_fields) {
+    biab_error_stop(paste(
+      "The selected boundary layer does not contain the requested subregion name field.",
+      "Available fields:", paste(region_fields, collapse = ", ")
+    ))
+  }
+  if (nrow(regions) == 0 || is.na(sf::st_crs(regions)) ||
+      !all(sf::st_geometry_type(regions) %in% c("POLYGON", "MULTIPOLYGON"))) {
+    biab_error_stop("The subregion layer must contain polygons and have a defined CRS.")
+  }
+  region_names <- trimws(as.character(regions[[input$region_field]]))
+  if (anyNA(region_names) || any(!nzchar(region_names))) {
+    biab_error_stop("Every subregion polygon must have a name.")
+  }
+  regions <- sf::st_sf(region = region_names, geometry = sf::st_geometry(regions)) |>
+    sf::st_transform(sf_srs) |>
+    sf::st_make_valid() |>
+    sf::st_collection_extract("POLYGON")
+
+  regions <- sf::st_intersection(regions, analysis_coverage)
+  # Exclude empty intersections and regions that only touch the footprint.
+  regions <- regions[
+    !sf::st_is_empty(regions) & as.numeric(sf::st_area(regions)) > 0,
+  ]
+  if (nrow(regions) == 0) {
+    biab_error_stop("The analysis area does not overlap any supplied subregion within the downloaded GFW coverage.")
+  }
+  regions <- regions |>
+    sf::st_collection_extract("POLYGON") |>
+    dplyr::group_by(region) |>
+    dplyr::summarise(.groups = "drop")
+  threshold_rows <- match(regions$region, thresholds$region)
+  if (anyNA(threshold_rows)) {
+    biab_error_stop(paste(
+      "Missing tree-cover thresholds for:",
+      paste(regions$region[is.na(threshold_rows)], collapse = ", ")
+    ))
+  }
+  regions$min_tree_cover_pct <- thresholds$threshold[threshold_rows]
+} else {
+  whole_area_threshold <- input$whole_area_threshold
+  if (is.null(whole_area_threshold)) {
+    whole_area_threshold <- 15
+  }
+  if (length(whole_area_threshold) != 1L || !is.numeric(whole_area_threshold) ||
+      !is.finite(whole_area_threshold) || whole_area_threshold < 0 || whole_area_threshold > 100) {
+    biab_error_stop("Enter a whole-area minimum tree-cover percentage from 0 to 100.")
+  }
+  regions <- sf::st_sf(
+    region = "Analysis area total",
+    min_tree_cover_pct = whole_area_threshold,
+    geometry = sf::st_union(analysis_coverage)
+  )
+}
 
 #-------------------------------------------------------------------------------------------------------------------
-# 3. Perform analysis per Guinea forest grouping
+# 3. Perform analysis per subregion
 #-------------------------------------------------------------------------------------------------------------------
-#gin_group_index = 1
-habitat_change_map <- list()
-for (gin_group_index in seq_len(nrow(gin_for_shape_intersect))) {
+habitat_change_map <- vector("list", nrow(regions))
+for (region_index in seq_len(nrow(regions))) {
   # Select the region already clipped to the shared analysis area
-  shape <- gin_for_shape_intersect[gin_group_index, ]
-  print(paste0("========== Processing: ", shape$group, " =========="))
+  shape <- regions[region_index, ]
+  print(paste0("========== Processing: ", shape$region, " =========="))
 
   # Subset the tree threshold values
   max_threshold <- 100
-  min_threshold <- min_forest[shape$group]
+  min_threshold <- shape$min_tree_cover_pct
 
   #-------------------------------------------------------------------------------------------------------------------
   # 3.1 Apply per-region threshold to base forest layer
@@ -196,7 +276,7 @@ for (gin_group_index in seq_len(nrow(gin_for_shape_intersect))) {
   )
 
   # Store in list
-  habitat_change_map[[gin_group_index]] <- v3_clip
+  habitat_change_map[[region_index]] <- v3_clip
 
   print("========== Layer of forest loss generated ==========")
 }
@@ -204,15 +284,18 @@ for (gin_group_index in seq_len(nrow(gin_for_shape_intersect))) {
 print("========== Outputting results ==========")
 
 # Merge into single forest loss layer
-rsrc <- terra::sprc(habitat_change_map)
-habiatat_change_map_merge <- terra::merge(rsrc)
+habitat_change_map_merge <- if (length(habitat_change_map) == 1L) {
+  habitat_change_map[[1L]]
+} else {
+  terra::merge(terra::sprc(habitat_change_map))
+}
 
 # Save
 habitat_change_map_path <- file.path(outputFolder,"GFW_loss.tiff")
 dir.create(dirname(habitat_change_map_path), recursive = TRUE, showWarnings = FALSE)
 suppressWarnings(
   terra::writeRaster(
-    habiatat_change_map_merge,
+    habitat_change_map_merge,
     habitat_change_map_path,
     gdal = c("COMPRESS=DEFLATE", "TFW=YES"),
     filetype = "COG",
@@ -224,15 +307,20 @@ suppressWarnings(
 biab_output("habitat_change_map", habitat_change_map_path)
 
 #-------------------------------------------------------------------------------------------------------------------
-# 4. Barplot of forest loss percentage by region and for Guinea
+# 4. Barplot of forest loss percentage by region and for the analysis area
 #-------------------------------------------------------------------------------------------------------------------
 print("========== Building forest change barplot ==========")
 
-# Count the merged raster for Guinea so shared boundary cells are counted once.
-plot_rasters <- c(habitat_change_map, list(habiatat_change_map_merge))
-region_names <- as.character(gin_for_shape_intersect$group)
-plot_regions <- c(region_names, "Guinea total")
-region_levels <- c(sort(unique(region_names)), "Guinea total")
+# Count the merged raster for the total so shared boundary cells are counted once.
+plot_rasters <- habitat_change_map
+plot_regions <- regions$region
+if (use_subregions) {
+  plot_rasters <- c(plot_rasters, list(habitat_change_map_merge))
+  plot_regions <- make.unique(c(plot_regions, "Analysis area total"))
+}
+total_label <- tail(plot_regions, 1L)
+region_levels <- plot_regions
+plot_width <- max(8, 1.25 * length(plot_regions))
 category_codes <- c("1", "2", "3")
 
 change_counts <- purrr::map_dfr(seq_along(plot_rasters), function(i) {
@@ -279,11 +367,11 @@ p_change <- ggplot2::ggplot(
 
 # Save and register output
 change_barplot_path <- file.path(outputFolder, "forest_change_barplot.png")
-ggplot2::ggsave(change_barplot_path, p_change, width = 8, height = 5, dpi = 150)
+ggplot2::ggsave(change_barplot_path, p_change, width = plot_width, height = 5, dpi = 150, limitsize = FALSE)
 biab_output("forest_change_barplot", change_barplot_path)
 
 #-------------------------------------------------------------------------------------------------------------------
-# 5. Barplot of area (ha) per change category by region and for Guinea
+# 5. Barplot of area (ha) per change category by region and for the analysis area
 #-------------------------------------------------------------------------------------------------------------------
 print("========== Building forest area barplot ==========")
 
@@ -291,7 +379,7 @@ cat_labels <- c("1" = "No change", "2" = "Loss", "3" = "Gain")
 cell_area_ha <- (spat_res^2) / 10000 # projected units assumed metres -> hectares
 
 change_area_df <- change_counts |>
-  dplyr::filter(count > 0 | region == "Guinea total") |>
+  dplyr::filter(count > 0 | region == total_label) |>
   dplyr::mutate(
     area_ha = count * cell_area_ha,
     category = factor(cat_labels[code], levels = unname(cat_labels))
@@ -322,7 +410,7 @@ p_area <- ggplot2::ggplot(
 
 # Save and register output
 area_barplot_path <- file.path(outputFolder, "forest_area_barplot.png")
-ggplot2::ggsave(area_barplot_path, p_area, width = 8, height = 5, dpi = 150)
+ggplot2::ggsave(area_barplot_path, p_area, width = plot_width, height = 5, dpi = 150, limitsize = FALSE)
 biab_output("forest_area_barplot", area_barplot_path)
 
 print("========== Analysis completed ==========")

@@ -1,8 +1,7 @@
 script: forest_loss_GFW.R
 name: Measure Forest loss
 description:
-  This script loads the area of habitat of the species and the Global Forest Watch (GFW) layers to measure changes on the habitat of the species.
-  It uses the layers the 2000 forest layer as a reference and removes the pixels from the loss layer of GFW data.
+  Measures forest change by subregion using supplied polygon boundaries, tree-cover thresholds, and Global Forest Watch (GFW) rasters.
 author:
   - name: Maria Isabel Arce-Plata
     identifier: https://orcid.org/0000-0003-4024-9268
@@ -54,29 +53,30 @@ inputs:
     description: Shared download area file. When Polygon is selected, its geometry also clips the analysis.
     type: application/octet-stream
     example: null
-  min_forest_forest_guinea:
-    label: min forest (Forest Guinea)
-    description: Minimum tree cover percentage for the Forest Guinea region.
-      Acts as a filter for the Global Forest Watch Data.
-    type: int
-    example: 25
-  min_forest_maritime_guinea:
-    label: min forest (Maritime Guinea)
-    description: Minimum tree cover percentage for the Maritime Guinea region.
-      Acts as a filter for the Global Forest Watch Data.
-    type: int
-    example: 15
-  min_forest_middle_guinea:
-    label: min forest (Middle Guinea)
-    description: Minimum tree cover percentage for the Middle Guinea region.
-      Acts as a filter for the Global Forest Watch Data.
-    type: int
-    example: 15
-  min_forest_upper_guinea:
-    label: min forest (Upper Guinea)
-    description: Minimum tree cover percentage for the Upper Guinea region.
-      Acts as a filter for the Global Forest Watch Data.
-    type: int
+  region_boundaries:
+    label: Subregion boundaries
+    description: Optional GeoPackage with one polygon layer. Leave blank to analyze the selected area as a whole. [See what the subregions look like in the Guinea example](https://github.com/user-attachments/assets/e6ccac41-c645-4de0-88a1-ef24a94a6c8a).
+    type: application/geopackage+sqlite3
+    example: /scripts/Forest_loss/gin_admbnda_adm1_ocha.gpkg
+  region_field:
+    label: Subregion name field
+    description: Required with subregion boundaries. Name of the attribute field to match against the region column in the pasted threshold table.
+    type: text
+    example: group
+  region_thresholds:
+    label: Minimum tree-cover thresholds
+    description: Required with subregion boundaries. Paste the header region, threshold and one name and percentage (0 to 100) per row. In a single-line field, separate rows with a backslash.
+    type: text
+    example: |-
+      region, threshold
+      Forest Guinea, 25
+      Maritime Guinea, 15
+      Middle Guinea, 15
+      Upper Guinea, 15
+  whole_area_threshold:
+    label: Whole-area minimum tree cover (%)
+    description: Used when subregion boundaries are blank. Enter a percentage from 0 to 100. Defaults to 15 if blank.
+    type: float
     example: 15
   t_0:
     label: initial time
@@ -99,11 +99,11 @@ outputs:
     range: [1, 3]
   forest_change_barplot:
     label: Forest loss barplot
-    description: Forest loss as a percentage of baseline forest (no change + loss, gain excluded), by region and for Guinea within the analysis area.
+    description: Forest loss as a percentage of baseline forest (no change + loss, gain excluded), by subregion and for the analysis area.
     type: image/png
   forest_area_barplot:
     label: Forest area barplot
-    description: Area (ha) by change category (no change, loss, gain), by region and for Guinea within the analysis area.
+    description: Area (ha) by change category (no change, loss, gain), by subregion and for the analysis area.
     type: image/png
 conda:
   channels:

@@ -329,31 +329,31 @@
       "example": 2020,
       "weight": 5
     },
-    "Forest_loss>forest_loss_GFW.yml@1|min_forest_forest_guinea": {
-      "description": "For example, enter **25** to require at least 25% tree cover for a cell to count as baseline forest in Forest Guinea. This threshold applies only where the selected area overlaps Forest Guinea. [View all four regions](https://github.com/user-attachments/assets/e6ccac41-c645-4de0-88a1-ef24a94a6c8a).",
-      "label": "Minimum tree cover (%) in Forest Guinea",
-      "type": "int",
-      "example": 25,
+    "Forest_loss>forest_loss_GFW.yml@1|region_boundaries": {
+      "description": "Optional GeoPackage with one polygon layer. Leave blank to analyze the selected area as a whole. [See what the subregions look like in the Guinea example](https://github.com/user-attachments/assets/e6ccac41-c645-4de0-88a1-ef24a94a6c8a).",
+      "label": "Subregion boundaries (optional)",
+      "type": "application/geopackage+sqlite3",
+      "example": "/scripts/Forest_loss/gin_admbnda_adm1_ocha.gpkg",
       "weight": 6
     },
-    "Forest_loss>forest_loss_GFW.yml@1|min_forest_maritime_guinea": {
-      "description": "For example, enter **15** to require at least 15% tree cover for a cell to count as baseline forest in Maritime Guinea. This threshold applies only where the selected area overlaps Maritime Guinea. [View all four regions](https://github.com/user-attachments/assets/e6ccac41-c645-4de0-88a1-ef24a94a6c8a).",
-      "label": "Minimum tree cover (%) in Maritime Guinea",
-      "type": "int",
-      "example": 15,
+    "Forest_loss>forest_loss_GFW.yml@1|region_field": {
+      "description": "Required with subregion boundaries. Enter the exact attribute field name in the GeoPackage. Features with the same name are combined.",
+      "label": "Subregion name field",
+      "type": "text",
+      "example": "group",
       "weight": 7
     },
-    "Forest_loss>forest_loss_GFW.yml@1|min_forest_middle_guinea": {
-      "description": "For example, enter **15** to require at least 15% tree cover for a cell to count as baseline forest in Middle Guinea. This threshold applies only where the selected area overlaps Middle Guinea. [View all four regions](https://github.com/user-attachments/assets/e6ccac41-c645-4de0-88a1-ef24a94a6c8a).",
-      "label": "Minimum tree cover (%) in Middle Guinea",
-      "type": "int",
-      "example": 15,
+    "Forest_loss>forest_loss_GFW.yml@1|region_thresholds": {
+      "description": "Required with subregion boundaries. Paste the header `region, threshold` and one name and percentage (0 to 100) per row. ",
+      "label": "Minimum tree-cover thresholds",
+      "type": "text",
+      "example": "region, threshold\nForest Guinea, 25\nMaritime Guinea, 15\nMiddle Guinea, 15\nUpper Guinea, 15",
       "weight": 8
     },
-    "Forest_loss>forest_loss_GFW.yml@1|min_forest_upper_guinea": {
-      "description": "For example, enter **15** to require at least 15% tree cover for a cell to count as baseline forest in Upper Guinea. This threshold applies only where the selected area overlaps Upper Guinea. [View all four regions](https://github.com/user-attachments/assets/e6ccac41-c645-4de0-88a1-ef24a94a6c8a).",
-      "label": "Minimum tree cover (%) in Upper Guinea",
-      "type": "int",
+    "Forest_loss>forest_loss_GFW.yml@1|whole_area_threshold": {
+      "description": "Used when subregion boundaries are blank. Enter a percentage from 0 to 100. Defaults to 15 if blank.",
+      "label": "Whole-area minimum tree cover (%)",
+      "type": "float",
       "example": 15,
       "weight": 9
     }
@@ -370,13 +370,13 @@
       "weight": 0
     },
     "Forest_loss>forest_loss_GFW.yml@1|forest_area_barplot": {
-      "description": "Hectares of no detected change, forest loss, and forest gain for each region and for the portion of Guinea covered by this run.",
+      "description": "Hectares of no detected change, forest loss, and forest gain for each region and for the combined analysis area.",
       "label": "Forest change area (ha)",
       "type": "image/png",
       "weight": 1
     },
     "Forest_loss>forest_loss_GFW.yml@1|forest_change_barplot": {
-      "description": "Forest area lost divided by baseline forest area, shown as a percentage for each region and for the portion of Guinea covered by this run. Baseline forest includes the forest that remained and the forest that was lost.",
+      "description": "Forest area lost divided by baseline forest area, shown as a percentage for each region and for the combined analysis area. Baseline forest includes the forest that remained and the forest that was lost.",
       "label": "Forest loss (% of baseline forest)",
       "type": "image/png",
       "weight": 2
@@ -402,7 +402,7 @@
   },
   "metadata": {
     "name": "Measure Forest Change",
-    "description": "\n## Introduction\nThe Measure Forest Change pipeline maps forest loss, forest gain, and areas with no detected change using [Global Forest Watch (GFW)](https://globalnaturewatch.org/) data. It uses tree-cover percentage in 2000 as the forest baseline, applies a user-defined minimum tree-cover threshold for each of Guinea's four natural regions, and removes forest loss recorded before the selected initial year to create a baseline for the analysis period. The pipeline then combines this baseline with forest-loss and forest-gain layers to classify each mapped pixel as no change, loss, or gain.\n\nYou can analyze all of Guinea or focus on a smaller area. The pipeline reports results for Forest Guinea, Maritime Guinea, Middle Guinea, and Upper Guinea wherever they overlap the selected area. [View all four regions](https://github.com/user-attachments/assets/e6ccac41-c645-4de0-88a1-ef24a94a6c8a).\n## Uses\nUse the pipeline to see where forest change was detected, compare forest loss across regions, and summarize the area affected in hectares. These results can support forest monitoring, conservation planning, and reporting.\n## Pipeline limitations\n* **Geographic coverage.** The pipeline uses fixed boundaries for Guinea’s four natural regions. A custom analysis area limits which parts of those regions are included.\n* **What tree-cover loss measures**. GFW detects canopy removal. The loss layer alone cannot distinguish permanent deforestation from harvesting, fire, or other disturbances.\n* **Timing of forest gain.** The selected years define the forest-loss analysis. Forest gain comes from the GFW gain layer’s fixed source period (2000 - 2012).\n* **Source data detail.** The resolution and classification accuracy of the source data limit how reliably small or fragmented changes can be detected.\n## Before you start\nFor all of Guinea, choose Country or region, select Guinea, and leave the area file blank. To focus on a smaller area, draw a bounding box or choose Polygon or Raster and provide the matching file. A polygon clips the analysis to its boundary. A raster defines a rectangular extent.\n\nChoose a start year of 2000 or later and an end year after the start year, up to 2020. The year 2000 is the earliest baseline year, and annual loss observations begin in 2001.\n\nView the [GEO BON STAC catalog](https://stac.geobon.org/) to inspect the GFW tree-cover and loss-year collections used by the pipeline.",
+    "description": "\n## Introduction\nThe Measure Forest Change pipeline maps forest loss, forest gain, and areas with no detected change using [Global Forest Watch (GFW)](https://globalnaturewatch.org/) data. It applies a minimum tree-cover threshold to the full selected area or separate thresholds to supplied subregions, and adjusts the 2000 baseline using loss recorded through the selected start year.\n## Uses\nUse the pipeline to see where forest change was detected, compare forest loss across regions, and summarize the area affected in hectares. These results can support forest monitoring, conservation planning, and reporting.\n## Before you start\nLeave Subregion boundaries blank to analyze the whole selected area with one threshold (15% if blank). For subregion reporting, supply a GeoPackage with one polygon layer and specify the field containing the subregion names. Use non-overlapping subregions. Features with the same name are combined. Paste the header `region, threshold` followed by one row per subregion with a value from 0 to 100. Separate rows with a backslash if the form uses a single-line field. Names must match the polygon attributes, including capitalization.\n\nChoose Country or region to download by the selected area or bounding box. Choose Polygon and upload an area file to clip to a custom boundary, or choose Raster to use a raster extent. The analysis covers the selected area within available GFW coverage. Supplying subregions limits the analysis to their polygons within that coverage. Select a projected CRS that uses metres.\n\n## Pipeline limitations\n* **Geographic coverage.** The pipeline uses fixed boundaries for Guinea’s four natural regions. A custom analysis area limits which parts of those regions are included.\n* **What tree-cover loss measures**. GFW detects canopy removal. The loss layer alone cannot distinguish permanent deforestation from harvesting, fire, or other disturbances.\n* **Timing of forest gain.** The selected years define the forest-loss analysis. Forest gain comes from the GFW gain layer’s fixed source period (2000 - 2012).\n* **Source data detail.** The resolution and classification accuracy of the source data limit how reliably small or fragmented changes can be detected.\n\nView the [GEO BON STAC catalog](https://stac.geobon.org/) for the source collections.",
     "author": [
       {
         "name": "Maria Isabel Arce-Plata",
